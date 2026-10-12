@@ -41,7 +41,6 @@ FRAC = 0.2
 def main():
     idx = json.load(open(os.path.join(DATA, 'argoverse-hd', 'stream_index_train.json'),
                          encoding='utf-8'))
-    rng = np.random.default_rng(SEED)
 
     # 全部场景内连续对
     scene_pairs = []
@@ -62,16 +61,8 @@ def main():
         k = max(1, int(round(len(pairs) * FRAC)))
         pos = np.linspace(0, len(pairs) - 1, k)
         pos = np.unique(np.round(pos).astype(int))
-        take = rng.permutation(len(pairs))[:k] if False else pos  # 均匀间隔, 可复现
+        take = pos  # 均匀间隔, 可复现
         chosen.extend(pairs[i] for i in take)
-
-    # Δt 统计(全量与抽样子集)
-    def dt_stats(pairs_subset):
-        d = []
-        for prev, cur in pairs_subset:
-            # dt 记录在当前帧上
-            d.append(cur[1] if isinstance(cur, tuple) else None)
-        return d
 
     # 重新按文件查 dt: 建 file -> dt_ms 映射
     file_dt = {}

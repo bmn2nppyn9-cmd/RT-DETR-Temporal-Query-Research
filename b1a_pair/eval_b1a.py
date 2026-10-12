@@ -122,10 +122,7 @@ def main():
             c3 = drop <= 0.003
             checks.append(('current-only 相对 B1a-0 下降 ≤0.3pp', c3,
                            f'降 {drop:+.4f}'))
-        if False:  # Frozen cross-model TP criterion is invalid for independently trained models.
-            c4 = br['new_gt_temporal'] > br['a0_gt_lost']
-            checks.append(('temporal 新增 TP > current 损失', c4,
-                           f"new {br['new_gt_temporal']} vs lost {br['a0_gt_lost']}"))
+        # Independently trained models do not share frozen-probe TP identities.
         if 'b1at31' in rows:
             c5 = br['AP50'] > rows['b1at31']['AP50']
             checks.append(('T23/T33 至少一个优于 T31', c5,
