@@ -11,7 +11,7 @@
 
 本项目以 PyTorch/CUDA 推理为基础，通过模块 profiling、解码器执行深度调整、query 数与分辨率扫描，找到可实际降低 NVIDIA GPU 前向延迟的配置；配套提供同步计时、尾延迟分析、精度回归、可追溯任务执行和离线性能面板。时序查询传播用于探索轻量配置的精度补偿。
 
-## 核心结果：同权重三层推理降低约 24.9% 的前向耗时
+## 核心结果：在端侧英伟达芯片上对同权重三层推理降低了约 24.9% 的前向耗时
 
 测试设备为 **NVIDIA RTX 5070 Ti Laptop GPU**。下表来自同一份 RT-DETR-ResNet18 权重，FP32、fused、batch=1、640×640 合成输入。精度在 Argoverse-HD 全量验证集 15,062 帧上评测。
 
@@ -61,13 +61,8 @@ python -m pip install -e .
 python -m tqinfra demo --output artifacts/demo
 ```
 
-打开 `artifacts/demo/report.html`，调整延迟预算与 P50/P95/P99 口径，查看满足预算的配置及精度来源。只比较全量验证结果时，勾选“只看全量精度”。
 
-![GPU performance evidence dashboard](docs/assets/dashboard.png)
-
-面板读取仓库已有 GPU 结果；demo 另行启动一个确定性 CPU fixture worker，演示日志、运行状态与产物追溯。它不执行 GPU benchmark。
-
-## 运行与复现
+## 运行
 
 ### 1. 准备模型依赖
 
@@ -142,7 +137,7 @@ python -m tqinfra validate-results
 | `tests/`、`.github/workflows/` | 自动测试与 CI |
 | `docs/` | 运行、性能协议、架构与验证记录 |
 
-当前公开实现覆盖 PyTorch/CUDA 模型执行路径与性能验证工具链。TensorRT、定制 CUDA kernel、量化部署和多流在线服务不属于已有成果。历史探索脚本可能仍含本机路径；可移植受管入口和研究 benchmark 的准备方式已分别说明。
+当前公开实现覆盖 PyTorch/CUDA 模型执行路径与性能验证工具链。TensorRT、定制 CUDA kernel、量化部署和多流在线服务不属于已有成果。历史探索脚本可能仍含本机路径（请做好分辨）；可移植受管入口和研究 benchmark 的准备方式已分别说明。
 
 ## License
 
