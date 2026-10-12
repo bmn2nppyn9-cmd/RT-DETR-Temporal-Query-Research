@@ -70,14 +70,6 @@ python -m tqinfra run evaluate --config configs/machine.local.json
 
 数据与模型是外部资产，仓库不隐式下载大型数据或启动训练。使用固定上游版本及研究补丁恢复模型依赖；普通 `pip install ultralytics` 没有时序训练 API。
 
-## 现有研究证据
-
-- 静态网格包含 **30 个深度 × query 配置**；只有 11 个配置有全量精度，其余标为 20% 子集。
-- 三维网格包含 **27 个计时配置**，不推断尚不存在的分辨率精度结果。
-- 同一历史评测协议下，三层训练基线 AP50 **38.77%**，S3→L3 两帧传播 **40.45%**，提高 **1.68pp**。这是历史 3 epoch 短训，不是最终标准 COCO/sAP 或生产 SLO 结论。
-- query 动态退出探针当前没有真实加速；保留作为“计算量减少不必然降低延迟”的工程案例。
-
-[性能测量协议与局限](docs/benchmarking.md) · [架构和故障语义](docs/architecture.md) · [求职项目讲解](docs/portfolio.md) · [验证记录](docs/validation.md)
 
 ## 开发
 
@@ -107,6 +99,7 @@ query_depth_probe/   # 深度机制分析和评测依赖
 query_prop_b0/       # 冻结传播失败诊断和评测依赖
 ```
 
-根目录旧 profiling/绘图/探索脚本和 `query_*` 中未接入受管流程的脚本属于历史研究归档，可能仍含原机器路径。受支持的可移植入口是 `tqinfra` 五项受管任务，历史输出保留原协议和来源，不混充本次新测量。
+
+
 
 欢迎fork！
