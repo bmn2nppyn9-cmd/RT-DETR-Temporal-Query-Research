@@ -23,3 +23,7 @@
 新验证不证明 GPU 加速、全量训练收敛、官方 COCO/sAP 对齐或线上 SLO。GitHub CI 另行执行 Windows/Linux 与 Python 版本矩阵；其结果应以 Actions 页面为准。
 
 本机完整原始日志和产物位于 artifacts/ml-validation、artifacts/training-smoke-v3 和 artifacts/final-demo，未上传大型数据或权重。发布摘要记录测试当时的代码哈希和基础 Git 状态，较晚运行还记录 backend 哈希，便于区分测试与后续文档提交。
+
+GitHub [首轮 CI](https://github.com/bmn2nppyn9-cmd/RT-DETR-Temporal-Query-Research/actions/runs/38245830899) 四组环境全部通过。
+
+历史 b1ac25 录制被强制覆盖到 300 queries 的问题已修复；原 checkpoint 的新 CPU 六帧录制全部为 325 queries。这里只验证修复后的行为，不把该 smoke 当作全量精度重测。

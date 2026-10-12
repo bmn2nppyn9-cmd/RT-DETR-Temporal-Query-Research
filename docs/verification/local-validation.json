@@ -246,5 +246,30 @@
         "ultralytics/models/utils/loss.py": "09d4ab80c4163a228a5f1044d605ad53c6e3ecaf244bd71094e35a73a226c3fc"
       }
     }
-  ]
+  ],
+  "control_query_fix": {
+    "historical_inference_queries": 300,
+    "current_verified_queries": [
+      325,
+      325,
+      325,
+      325,
+      325,
+      325
+    ],
+    "frames": 6,
+    "source": "existing b1ac25 checkpoint",
+    "scope": "CPU recording smoke, not full re-evaluation"
+  },
+  "github_ci": {
+    "run_id": 38245830899,
+    "commit": "1ae2cfd78f5982de9604dca274d8e6a74b5d2b07",
+    "conclusion": "success",
+    "matrix": [
+      "ubuntu/Python3.10",
+      "ubuntu/Python3.13",
+      "windows/Python3.10",
+      "windows/Python3.13"
+    ]
+  }
 }

@@ -105,7 +105,7 @@ def main():
         assert head.decoder.eval_idx == 2, f'eval_idx={head.decoder.eval_idx}, 应为 2'
         head.set_temporal_enabled(False)
         head.time_decoder_cuda = False
-        head.set_query_overrides(encoder_queries=300, temporal_queries=0,
+        head.set_query_overrides(encoder_queries=head.num_queries, temporal_queries=0,
                                  output_topk=300, motion_alpha=0.0)
 
         temporal = CONFIGS[name]['temporal']

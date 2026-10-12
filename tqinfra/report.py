@@ -98,7 +98,7 @@ def render(root, output):
 <div class="controls"><label>预算 ms <input id="budget" type="number" min="0" step="0.5" value="15"></label><label>计时口径 <select id="quantile"><option value="p50_ms">P50</option><option value="p95_ms">P95</option><option value="p99_ms">P99</option></select></label><label><input id="full" type="checkbox">只看全量精度</label><span id="count"></span></div>
 <div class="scroll"><table><thead><tr><th>Depth / Queries</th><th>AP50 %</th><th>精度来源</th><th>P50 ms</th><th>P95 ms</th><th>P99 ms</th><th>预算</th></tr></thead><tbody id="static"></tbody></table></div>
 <h2>三维网格 · 延迟证据</h2><p>这 27 点只有计时数据，本页不会为不同分辨率补造精度或与二维精度拼成 Pareto 前沿。</p><div class="scroll"><table><thead><tr><th>Depth / Queries / Resolution</th><th>P50 ms</th><th>P95 ms</th><th>P99 ms</th></tr></thead><tbody id="latency"></tbody></table></div>
-<h2>两帧训练 · 3 epoch</h2><p>21 场景、15062 帧，历史自实现同帧 AP 口径。五组独立训练，S3→L3 对错位对照优势较小。此表没有公平配对的传播端到端延迟，不能用静态三层计时替代。</p>
+<h2>两帧训练 · 3 epoch</h2><p>21 场景、15062 帧，历史自实现同帧 AP 口径。五组独立训练，S3→L3 对错位对照优势较小。历史 b1ac25 训练 325 queries、录制覆盖为 300，不构成完整的等 query 推理对照。此表没有公平配对的传播端到端延迟，不能用静态三层计时替代。</p>
 <table><thead><tr><th>配置</th><th>AP %</th><th>AP50 %</th><th>AP75 %</th></tr></thead><tbody>TRAINING_ROWS</tbody></table>
 <footer id="sources"></footer><script id="evidence" type="application/json">PAYLOAD</script><script>
 const data=JSON.parse(document.getElementById('evidence').textContent);

@@ -17,3 +17,7 @@ S3→L3 AP50 比三层训练基线高约 1.68pp，比错位 T31 仅高约 0.07pp
 独占 GPU 或明确记录共享；同样 checkpoint、图像、batch、dtype、融合、预热和输出预算；分清 model CUDA、decoder CUDA 和 predict wall。随机/轮转交错，报告 P50/P95/P99，保存所有配置和硬件信息。端到端录制先预热后 reset，场景不串状态。
 
 本次控制层 demo fixture 是正确性演示，不是速度测试。新 CPU 模型 smoke 也不等于 GPU 性能、全量 AP 或训练收敛。验证记录必须把历史数字与新执行分开。
+
+## 历史对照审核
+
+本次核查原 `records_e3/preds_b1ac25.npz` 发现：该配置训练时使用 325 current queries，但历史录制代码将 encoder query 数覆盖为 300，因此历史表中的 b1ac25 不是完整的同预算 325-query 推理对照。历史数字保留并注明，不据此宣称已经排除增加 query 的贡献。当前受管录制已修复为使用 checkpoint 的 num_queries，后续正式对照应重录并重新评测。三层基线与 S3→L3 的历史差值仍是对应两配置的已有结果。
