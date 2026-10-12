@@ -26,10 +26,12 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 
 os.environ.setdefault('KMP_DUPLICATE_LIB_OK', 'TRUE')
-sys.path.insert(0, r'C:\Users\TONY\ultralytics')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tqinfra.runtime import activate_backend, DATA_ROOT, PAIR_DIR, TRAIN_DIR, RECORD_DIR, EVAL_DIR, INITIAL_WEIGHTS, MODEL_YAML, ROOT
+activate_backend()
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = r'D:\lunwen\自研\数据集\argoverse-hd'
+DATA = str(DATA_ROOT / 'argoverse-hd')
 
 CONFIGS = {
     'b1a0': {'temporal': False},
@@ -62,13 +64,16 @@ def find_head(model):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--configs', nargs='+', default=list(CONFIGS.keys()))
-    ap.add_argument('--run-dir', default=os.path.join(HERE, 'runs'))
+    ap.add_argument('--configs', nargs='+', choices=list(CONFIGS), default=list(CONFIGS))
+    ap.add_argument('--run-dir', default=str(TRAIN_DIR))
     ap.add_argument('--ckpt-name', default=os.path.join('weights', 'best.pt'))
     ap.add_argument('--stream-index', default=os.path.join(DATA, 'stream_index.json'))
     ap.add_argument('--images', default=os.path.join(DATA, 'images'))
-    ap.add_argument('--out', default=os.path.join(HERE, 'records_e1'))
+    ap.add_argument('--out', default=str(RECORD_DIR))
     ap.add_argument('--imgsz', type=int, default=640)
+    ap.add_argument('--device', default='0')
+    ap.add_argument('--limit-frames', type=int, default=0)
+    ap.add_argument('--warmup', type=int, default=10)
     ap.add_argument('--conf', type=float, default=0.001)
     ap.add_argument('--max-det', type=int, default=300)
     ap.add_argument('--limit-scenes', type=int, default=0)
@@ -80,6 +85,8 @@ def main():
     idx = json.load(open(args.stream_index, encoding='utf-8'))
     scenes = idx['scenes'][:args.limit_scenes] if args.limit_scenes else idx['scenes']
     n_frames = sum(s['n_frames'] for s in scenes)
+    if not scenes or not scenes[0]['frames']:
+        raise ValueError('Empty stream index')
     log(f'流式索引: {len(scenes)} 场景 / {n_frames} 帧')
 
     from ultralytics import RTDETR
@@ -90,8 +97,7 @@ def main():
             log(f'[跳过] {out_path} 已存在')
             continue
         if not os.path.exists(ckpt):
-            log(f'[跳过] 缺 checkpoint: {ckpt}')
-            continue
+            raise FileNotFoundError(ckpt)
 
         m = RTDETR(ckpt)
         head = find_head(m.model)
@@ -115,11 +121,12 @@ def main():
             f'temporal={temporal} spec={spec}')
         # warmup (temporal off)
         warm = load_bgr(os.path.join(args.images, scenes[0]['frames'][0]['file']))
-        _ = m.predict(warm, imgsz=args.imgsz, conf=args.conf, max_det=args.max_det,
-                      device=0, verbose=False)[0]
+        for _ in range(args.warmup):
+            m.predict(warm, imgsz=args.imgsz, conf=args.conf, max_det=args.max_det,
+                      device=args.device, verbose=False)
         if temporal:
             head.set_temporal_enabled(True)
-            head.time_decoder_cuda = True
+            head.time_decoder_cuda = False
 
         scene_arr, fidx_arr, t_arr, lat_arr, dec_arr, nq_arr = [], [], [], [], [], []
         boxes, scores, clss, qidxs, srcs, sdeps, injs, ptr = [], [], [], [], [], [], [], [0]
@@ -130,13 +137,16 @@ def main():
                 head.reset_temporal_state()
                 files = [os.path.join(args.images, fr['file']) for fr in s['frames']]
                 ts = [fr['t_ns'] for fr in s['frames']]
+                if args.limit_frames:
+                    files = files[:args.limit_frames]
+                    ts = ts[:args.limit_frames]
                 for base in range(0, len(files), 32):
                     part = files[base:base + 32]
                     imgs = list(pool.map(load_bgr, part))
                     for k, im in enumerate(imgs):
                         t0 = time.perf_counter()
                         r = m.predict(im, imgsz=args.imgsz, conf=args.conf,
-                                      max_det=args.max_det, device=0, verbose=False)[0]
+                                      max_det=args.max_det, device=args.device, verbose=False)[0]
                         lat = (time.perf_counter() - t0) * 1000.0
                         b = r.boxes
                         n = 0 if b is None else len(b)

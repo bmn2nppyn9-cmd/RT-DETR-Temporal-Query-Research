@@ -22,12 +22,15 @@ import os
 import sys
 import time
 
-sys.path.insert(0, r'C:\Users\TONY\ultralytics')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tqinfra.runtime import activate_backend, DATA_ROOT, PAIR_DIR, TRAIN_DIR, RECORD_DIR, EVAL_DIR, INITIAL_WEIGHTS, MODEL_YAML, ROOT
+activate_backend()
 os.environ.setdefault('KMP_DUPLICATE_LIB_OK', 'TRUE')
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-BEST_PT = r'D:\lunwen\自研\runs\detect\runs_rtdetr\r18_640_sub20_b4\weights\best.pt'
-PROJECT = r'D:\lunwen\自研\b1a_pair\runs'
+HERE = str(PAIR_DIR)
+PAIR_DIR.mkdir(parents=True, exist_ok=True)
+BEST_PT = str(INITIAL_WEIGHTS)
+PROJECT = str(TRAIN_DIR)
 
 CONFIGS = {
     'b1a0': {
@@ -63,7 +66,7 @@ DATA_YAML = {
 
 def write_yamls():
     head = ('# 自动生成 by train_b1a.py\n'
-            'path: D:\\lunwen\\自研\\数据集\\argoverse-hd-yolo\n'
+            'path: {data_root}\n'
             'val: {val}\n'
             'names:\n'
             '  0: person\n  1: bicycle\n  2: car\n  3: motorcycle\n'
@@ -72,11 +75,11 @@ def write_yamls():
     for pair, txt in [(False, 't_frames_train.txt'), (True, 'all_frames_train.txt')]:
         p = DATA_YAML[pair]
         with open(p, 'w', encoding='utf-8') as f:
-            f.write(f'train: {os.path.join(HERE, txt).replace(chr(92), "/")}\n'
-                    + head.format(val=val))
+            f.write(f'train: {json.dumps(os.path.join(HERE, txt).replace(chr(92), "/"))}\n'
+                    + head.format(val=json.dumps(val), data_root=json.dumps(str(DATA_ROOT / 'argoverse-hd-yolo').replace(chr(92), '/'))))
 
 
-def run_config(name: str, epochs: int) -> dict:
+def run_config(name: str, epochs: int, batch=4, device='0', workers=3) -> dict:
     from dataset_b1a import B1aTrainer  # 延迟导入, 保证 override 生效时机
 
     cfg = CONFIGS[name]
@@ -85,13 +88,13 @@ def run_config(name: str, epochs: int) -> dict:
         pair_index = json.load(open(os.path.join(HERE, 'pairs_train.json'),
                                     encoding='utf-8'))
     overrides = dict(
-        model=r'D:\lunwen\自研\cfg\rtdetr-resnet18.yaml',
+        model=str(MODEL_YAML),
         data=DATA_YAML[cfg['pair']],
         epochs=epochs,
-        batch=4,
+        batch=batch,
         imgsz=640,
-        device='0',
-        workers=3,
+        device=device,
+        workers=workers,
         amp=False,
         deterministic=False,
         seed=0,
@@ -103,7 +106,7 @@ def run_config(name: str, epochs: int) -> dict:
         pretrained=BEST_PT,
         project=PROJECT,
         name=name,
-        exist_ok=True,
+        exist_ok=False,
         val=True,
         save=True,
         verbose=True,
@@ -133,7 +136,10 @@ def run_config(name: str, epochs: int) -> dict:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--configs', nargs='+', default=list(CONFIGS.keys()))
+    ap.add_argument('--configs', nargs='+', choices=list(CONFIGS), default=list(CONFIGS))
+    ap.add_argument('--batch', type=int, default=4)
+    ap.add_argument('--device', default='0')
+    ap.add_argument('--workers', type=int, default=3)
     ap.add_argument('--epochs', type=int, default=1)
     ap.add_argument('--out', default=None)
     args = ap.parse_args()
@@ -145,7 +151,7 @@ def main():
         print(f'\n{"=" * 70}\n[B1a] {name}: {CONFIGS[name]["desc"]}  '
               f'epochs={args.epochs}\n{"=" * 70}', flush=True)
         try:
-            r = run_config(name, args.epochs)
+            r = run_config(name, args.epochs, args.batch, args.device, args.workers)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -158,6 +164,8 @@ def main():
         with open(out, 'w', encoding='utf-8') as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
     print(f'\n[B1a] 全部完成, 结果: {out}')
+    if any('error' in r for r in results):
+        raise SystemExit(1)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,25 @@
+name: control-plane
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.10', '3.13']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e ".[dev,evaluation]"
+      - run: ruff check tqinfra tests scripts
+      - run: python -m pytest -q
+      - run: python -m tqinfra validate-results
+      - run: python -m tqinfra demo --output artifacts/ci-demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evidence-${{ matrix.os }}-${{ matrix.python }}
+          path: artifacts/ci-demo/

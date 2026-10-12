@@ -15,7 +15,9 @@ import sys
 from types import SimpleNamespace
 
 os.environ.setdefault('KMP_DUPLICATE_LIB_OK', 'TRUE')
-sys.path.insert(0, r'C:\Users\TONY\ultralytics')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tqinfra.runtime import activate_backend, DATA_ROOT, PAIR_DIR, TRAIN_DIR, RECORD_DIR, EVAL_DIR, INITIAL_WEIGHTS, MODEL_YAML, ROOT
+activate_backend()
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import torch
@@ -24,9 +26,9 @@ from ultralytics.nn.modules.head import RTDETRDecoder
 from ultralytics.nn.tasks import RTDETRDetectionModel, torch_load
 from ultralytics.utils import LOGGER
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-BEST_PT = r'D:\lunwen\自研\runs\detect\runs_rtdetr\r18_640_sub20_b4\weights\best.pt'
-YAML = r'D:\lunwen\自研\cfg\rtdetr-resnet18.yaml'
+HERE = str(PAIR_DIR)
+BEST_PT = str(INITIAL_WEIGHTS)
+YAML = str(MODEL_YAML)
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 NC = 8
 
@@ -230,7 +232,7 @@ def main():
     # ---------- 汇总
     n_fail = sum(1 for _, ok, _ in results if not ok)
     LOGGER.info(f'\n回归结果: {len(results) - n_fail}/{len(results)} 通过')
-    out = os.path.join(HERE, 'logs')
+    out = str(EVAL_DIR / 'regression')
     os.makedirs(out, exist_ok=True)
     with open(os.path.join(out, 'b1a_regression.json'), 'w', encoding='utf-8') as f:
         json.dump([{'id': r, 'pass': bool(ok), 'detail': d} for r, ok, d in results],

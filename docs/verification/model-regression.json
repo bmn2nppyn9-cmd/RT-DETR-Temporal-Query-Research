@@ -1,0 +1,57 @@
+[
+  {
+    "id": "R1 ndl=3 加载与结构",
+    "pass": true,
+    "detail": "3 层模型 vs 6 层模型 eval_idx=2 输出最大差 0.0（应逐位一致）"
+  },
+  {
+    "id": "R2 pair 数据集",
+    "pass": true,
+    "detail": "前 200 对同场景=True, img/img_prev 形状=(2, 3, 640, 640)"
+  },
+  {
+    "id": "R3a 删除 img_prev 后 temporal 模型 ≡ 对照",
+    "pass": true,
+    "detail": "损失差 0.0"
+  },
+  {
+    "id": "R3b state=None 注入关闭返回张量",
+    "pass": true,
+    "detail": "dec_bboxes 类型=Tensor（M=0 应退化为张量）"
+  },
+  {
+    "id": "R4 梯度流",
+    "pass": true,
+    "detail": "state 无梯度=True, adapter 梯度范数=7.026e+01, src_embed 范数=4.165e-01"
+  },
+  {
+    "id": "R5 T33 层宽 [300,300,325]",
+    "pass": true,
+    "detail": "各层 query 数=[(300,), (300,), (325,)]"
+  },
+  {
+    "id": "R6 恒等注入 ≡ QD-T33",
+    "pass": true,
+    "detail": "末层框最大差 0.0（应逐位一致）"
+  },
+  {
+    "id": "R7 状态提取幂等",
+    "pass": true,
+    "detail": "两次提取逐位一致=True"
+  },
+  {
+    "id": "R8 ckpt 往返",
+    "pass": true,
+    "detail": "spec 保持=True, adapter 在=True, 输出差 0.0"
+  },
+  {
+    "id": "R9 DN 关闭",
+    "pass": true,
+    "detail": "dn_meta is None=True, dn 损失全零=True"
+  },
+  {
+    "id": "R10 eval 路径 adapter 应用",
+    "pass": true,
+    "detail": "与手动应用差 0.0"
+  }
+]

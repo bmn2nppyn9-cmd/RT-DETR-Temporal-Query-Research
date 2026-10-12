@@ -15,3 +15,13 @@ stream_preds*/
 *.log
 .env
 .env.*
+
+artifacts/
+configs/*.local.json
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+.venv-*/

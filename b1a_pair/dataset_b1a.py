@@ -19,7 +19,9 @@ import sys
 
 import torch
 
-sys.path.insert(0, r'C:\Users\TONY\ultralytics')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tqinfra.runtime import activate_backend, DATA_ROOT, PAIR_DIR, TRAIN_DIR, RECORD_DIR, EVAL_DIR, INITIAL_WEIGHTS, MODEL_YAML, ROOT
+activate_backend()
 
 from ultralytics.models.rtdetr.train import RTDETRTrainer
 from ultralytics.models.rtdetr.val import RTDETRDataset

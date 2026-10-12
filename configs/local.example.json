@@ -1,0 +1,17 @@
+{
+  "data_root": "../data",
+  "initial_weights": "../weights/baseline.pt",
+  "backend": "../vendor/ultralytics",
+  "workspace": "../artifacts/workspace",
+  "configs": [
+    "b1a0",
+    "b1at33"
+  ],
+  "epochs": 1,
+  "batch": 4,
+  "device": "0",
+  "workers": 3,
+  "limit_scenes": 0,
+  "timeout_seconds": 0,
+  "limit_frames": 0
+}

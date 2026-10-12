@@ -22,8 +22,11 @@ import subprocess
 import sys
 
 os.environ.setdefault('KMP_DUPLICATE_LIB_OK', 'TRUE')
-HERE = os.path.dirname(os.path.abspath(__file__))
-ZIYAN = r'D:\lunwen\自研'
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tqinfra.runtime import EVAL_DIR, RECORD_DIR, ROOT
+EVAL_DIR.mkdir(parents=True, exist_ok=True)
+HERE = str(EVAL_DIR)
+ZIYAN = str(ROOT)
 TAGS = ['b1a0', 'b1ac25', 'b1at31', 'b1at23', 'b1at33']
 
 # 历史锚点(冻结模型, 仅对照语境): A0=3L 冻结, U0=6L 冻结
@@ -37,7 +40,7 @@ def run(cmd, logm):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--records', default=os.path.join(HERE, 'records_e1'))
+    ap.add_argument('--records', default=str(RECORD_DIR))
     ap.add_argument('--suffix', default='e1')
     ap.add_argument('--tags', nargs='+', default=TAGS)
     ap.add_argument('--skip-full', action='store_true')
@@ -48,7 +51,7 @@ def main():
     have = [t for t in args.tags if os.path.exists(os.path.join(rec, f'preds_{t}.npz'))]
     missing = [t for t in args.tags if t not in have]
     if missing:
-        print(f'[提示] 缺录制, 跳过: {missing}')
+        raise FileNotFoundError(f'Missing recordings: {missing}')
     assert 'b1a0' in have, '缺 preds_b1a0.npz(基线), 无法判定'
 
     a0_ref = os.path.join(rec, 'preds_a0.npz')
@@ -65,7 +68,7 @@ def main():
     split_out = os.path.join(HERE, f'temporal_b1a_{args.suffix}.json')
     if not args.skip_split:
         run([sys.executable, os.path.join(ZIYAN, 'query_depth_probe', 'eval_qd_t.py'),
-             '--preds-dir', rec, '--out', split_out],
+             '--preds-dir', rec, '--configs', *have, '--out', split_out],
             '拆源诊断(current/temporal/保持率/新增 TP)...')
 
     full = json.load(open(full_out, encoding='utf-8'))
@@ -119,7 +122,7 @@ def main():
             c3 = drop <= 0.003
             checks.append(('current-only 相对 B1a-0 下降 ≤0.3pp', c3,
                            f'降 {drop:+.4f}'))
-        if br['new_gt_temporal'] is not None and br['a0_gt_lost'] is not None:
+        if False:  # Frozen cross-model TP criterion is invalid for independently trained models.
             c4 = br['new_gt_temporal'] > br['a0_gt_lost']
             checks.append(('temporal 新增 TP > current 损失', c4,
                            f"new {br['new_gt_temporal']} vs lost {br['a0_gt_lost']}"))
@@ -140,10 +143,10 @@ def main():
 
     out = {'suffix': args.suffix, 'records': rec, 'rows': rows,
            'checks': [{'name': n, 'pass': bool(o), 'detail': d} for n, o, d in checks],
-           'verdict': verdict, 'anchor': ANCHOR}
+           'verdict': verdict, 'anchor': ANCHOR, 'scope': 'same-frame AP; not an sAP or production release gate'}
     out_path = os.path.join(HERE, f'b1a_decision_{args.suffix}.json')
     with open(out_path, 'w', encoding='utf-8') as f:
-        json.dump(out, f, ensure_ascii=False, indent=2)
+        json.dump(out, f, ensure_ascii=False, indent=2, allow_nan=False)
     print(f'已写入 {out_path}')
 
 

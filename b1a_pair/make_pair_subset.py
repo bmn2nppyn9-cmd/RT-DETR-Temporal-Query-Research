@@ -27,10 +27,13 @@ try:
 except Exception:
     pass
 
-DATA = r'D:\lunwen\自研\数据集'
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tqinfra.runtime import DATA_ROOT, PAIR_DIR
+DATA = str(DATA_ROOT)
 IMG_ROOT = os.path.join(DATA, 'argoverse-hd-yolo', 'images', 'train')
 VAL_TXT = os.path.join(DATA, 'argoverse-hd-yolo', 'train_sub_val.txt')
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = str(PAIR_DIR)
+PAIR_DIR.mkdir(parents=True, exist_ok=True)
 SEED = 20260923
 FRAC = 0.2
 
@@ -54,6 +57,8 @@ def main():
     # 场景分层 20%: 每场景等比例抽对(至少 1 对), 场景内均匀间隔抽取保证覆盖
     chosen = []
     for pairs in scene_pairs:
+        if not pairs:
+            continue
         k = max(1, int(round(len(pairs) * FRAC)))
         pos = np.linspace(0, len(pairs) - 1, k)
         pos = np.unique(np.round(pos).astype(int))
@@ -88,7 +93,7 @@ def main():
             if not os.path.exists(f.replace(os.sep + 'images' + os.sep,
                                             os.sep + 'labels' + os.sep)[:-4] + '.txt')]
     if miss:
-        print(f'[警告] {len(miss)} 个 t 帧缺标签, 示例: {miss[:3]}')
+        raise FileNotFoundError(f'{len(miss)} 个 t 帧缺标签, 示例: {miss[:3]}')
 
     with open(os.path.join(HERE, 'pairs_train.json'), 'w', encoding='utf-8') as f:
         json.dump([[img(p), img(c)] for p, c in chosen], f, ensure_ascii=False)

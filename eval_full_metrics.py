@@ -44,7 +44,8 @@ import numpy as np
 from eval_sap import (IOU_THRS, build_timeline, iou_matrix, load_gt, log,
                       voc_ap)
 
-DATA = r'D:\lunwen\自研\数据集\argoverse-hd'
+from tqinfra.runtime import DATA_ROOT, EVAL_DIR, ROOT
+DATA = str(DATA_ROOT / 'argoverse-hd')
 CATS = ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck',
         'traffic_light', 'stop_sign']
 NC = len(CATS)
@@ -182,32 +183,35 @@ def evaluate_full(rec, gt, frames, frame_key):
 
     # ---------------- 聚合 ----------------
     cls_pos = [np.nonzero(cls_s == c)[0] for c in range(NC)]
-    res = {'n_gt': n_gt.tolist(),
+    res = {'evaluation_frames': nfr, 'valid_classes': int((n_gt > 0).sum()), 'n_gt': n_gt.tolist(),
            'n_gt_area': {AREA_NAMES[r]: n_gt_rng[r].tolist() for r in range(3)}}
 
     # AP / AP50 / AP75 (逐类, 再平均)
     per_class = {}
+    valid_classes = n_gt > 0
+    def mean_present(values):
+        return float(values[valid_classes].mean()) if valid_classes.any() else 0.0
     ap_thr = np.zeros((NC, n_thr))                  # 逐类逐 IoU 的 AP
     for c in range(NC):
         idx = cls_pos[c]
         for ti in range(n_thr):
             ap_thr[c, ti] = ap_from_tp(tp_all[ti, idx], n_gt[c]) \
-                if len(idx) else 0.0
+                if len(idx) and n_gt[c] > 0 else 0.0
         per_class[CATS[c]] = {
             'AP': float(ap_thr[c].mean()),
             'AP50': float(ap_thr[c, 0]),
             'AP75': float(ap_thr[c, 5])}
-    res['AP'] = float(ap_thr.mean())
-    res['AP50'] = float(ap_thr[:, 0].mean())
-    res['AP75'] = float(ap_thr[:, 5].mean())
+    res['AP'] = mean_present(ap_thr)
+    res['AP50'] = mean_present(ap_thr[:, 0])
+    res['AP75'] = mean_present(ap_thr[:, 5])
 
     # AR@1/10/100 (逐类逐阈值 recall 平均)
     ar_cls = np.zeros((NC, len(AR_KS)))
     for c in range(NC):
         for ki in range(len(AR_KS)):
-            ar_cls[c, ki] = (ar_hits[:, ki, c] / n_gt[c]).mean()
+            ar_cls[c, ki] = (ar_hits[:, ki, c] / n_gt[c]).mean() if n_gt[c] > 0 else 0.0
     for ki, k in enumerate(AR_KS):
-        res[f'AR{k}'] = float(ar_cls[:, ki].mean())
+        res[f'AR{k}'] = mean_present(ar_cls[:, ki])
     for c in range(NC):
         per_class[CATS[c]]['AR100'] = float(ar_cls[c, 2])
 
@@ -226,7 +230,7 @@ def evaluate_full(rec, gt, frames, frame_key):
             aps.append(float(np.mean([
                 ap_from_tp(tp_c[ti], n_gt_rng[r, c]) for ti in range(n_thr)])))
             per_class[CATS[c]][f'AP_{rn}'] = aps[-1]
-        res[f'AP_{rn}'] = float(np.mean(aps))
+        res[f'AP_{rn}'] = float(np.mean(aps)) if aps else -1.0
 
     # 工作点 P/R/F1 (IoU=0.5, 池化分数序, mean-F1 最大处)
     tp05 = tp_all[0]
@@ -241,26 +245,26 @@ def evaluate_full(rec, gt, frames, frame_key):
         cum_tp = np.cumsum(tpc)
         cum_fp = np.cumsum(fpc)
         p = cum_tp / np.maximum(cum_tp + cum_fp, 1)
-        r = cum_tp / n_gt[c]
+        r = cum_tp / n_gt[c] if n_gt[c] > 0 else np.zeros_like(cum_tp, dtype=float)
         f1_curve += 2 * p * r / np.maximum(p + r, 1e-9)
         # 记录逐类曲线末端备查
         per_class[CATS[c]]['n_det'] = int(is_c.sum())
-    f1_curve /= NC
-    i_best = int(np.argmax(f1_curve))
-    theta = float(score[order][i_best])
+    f1_curve /= max(int(valid_classes.sum()), 1)
+    i_best = int(np.argmax(f1_curve)) if ndet else -1
+    theta = float(score[order][i_best]) if ndet else 1.0
     for c in range(NC):
         is_c = cls_s == c
         tpc = (tp05 & is_c)[:i_best + 1]
         fpc = ((~tp05) & is_c)[:i_best + 1]
         tp_n, fp_n = int(tpc.sum()), int(fpc.sum())
         P[c] = tp_n / max(tp_n + fp_n, 1)
-        R[c] = tp_n / n_gt[c]
+        R[c] = tp_n / n_gt[c] if n_gt[c] > 0 else 0.0
         F1[c] = 2 * P[c] * R[c] / max(P[c] + R[c], 1e-9)
         per_class[CATS[c]].update(
             P=float(P[c]), R=float(R[c]), F1=float(F1[c]))
     res['operating_point'] = {
-        'theta': theta, 'P': float(P.mean()), 'R': float(R.mean()),
-        'F1': float(F1.mean())}
+        'theta': theta, 'P': mean_present(P), 'R': mean_present(R),
+        'F1': mean_present(F1)}
     res['per_class'] = per_class
     return res
 
@@ -271,7 +275,7 @@ def print_table(results):
             'AR1', 'AR10', 'AR100']
     log('')
     log('=' * 78)
-    log('主指标 (全量 val 15062 帧, verify 口径)')
+    log('主指标 (录制帧范围, 同帧 AP 口径)')
     hdr = f"{'配置':<8}" + ''.join(f'{c:>10}' for c in cols)
     log(hdr)
     for t in tags:
@@ -342,7 +346,7 @@ def main():
 
     print_table(results)
     with open(args.out, 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+        json.dump(results, f, ensure_ascii=False, indent=2, allow_nan=False)
     log(f'已写入 {args.out}')
 
 

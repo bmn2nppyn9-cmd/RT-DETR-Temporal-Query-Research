@@ -45,7 +45,8 @@ try:
 except Exception:
     pass
 
-DATA = r'D:\lunwen\自研\数据集\argoverse-hd'
+from tqinfra.runtime import DATA_ROOT, EVAL_DIR, ROOT
+DATA = str(DATA_ROOT / 'argoverse-hd')
 IOU_THRS = np.round(np.arange(0.5, 1.0, 0.05), 2)
 
 

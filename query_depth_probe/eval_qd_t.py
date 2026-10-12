@@ -31,13 +31,15 @@ try:
 except Exception:
     pass
 
-sys.path.insert(0, r'D:\lunwen\自研')
-sys.path.insert(0, r'D:\lunwen\自研\query_prop_b0')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'query_prop_b0'))
 from eval_b0 import evaluate_ap, match_frame_tp  # noqa: E402
 from eval_sap import build_timeline, iou_matrix, load_gt  # noqa: E402
 
-DATA = r'D:\lunwen\自研\数据集\argoverse-hd'
-WORK = r'D:\lunwen\自研\query_depth_probe'
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tqinfra.runtime import DATA_ROOT, EVAL_DIR, ROOT
+DATA = str(DATA_ROOT / 'argoverse-hd')
+WORK = str(EVAL_DIR)
 CLASS_NAMES = ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck',
                'traffic_light', 'stop_sign']
 
@@ -237,7 +239,7 @@ def main():
 
     out = args.out or os.path.join(WORK, f'temporal_depth{"_" + args.suffix if args.suffix else ""}.json')
     with open(out, 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+        json.dump(results, f, ensure_ascii=False, indent=2, allow_nan=False)
     log(f'已写入 {out}')
 
 

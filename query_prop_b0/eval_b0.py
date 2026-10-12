@@ -30,7 +30,7 @@ import time
 
 import numpy as np
 
-sys.path.insert(0, r'D:\lunwen\自研')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 try:
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 except Exception:
@@ -39,7 +39,9 @@ except Exception:
 from eval_sap import (IOU_THRS, build_timeline, evaluate as sap_evaluate,
                       greedy_tp, iou_matrix, load_gt, voc_ap)
 
-DATA = r'D:\lunwen\自研\数据集\argoverse-hd'
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tqinfra.runtime import DATA_ROOT, EVAL_DIR, ROOT
+DATA = str(DATA_ROOT / 'argoverse-hd')
 CLASS_NAMES = ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck',
                'traffic_light', 'stop_sign']
 
@@ -106,14 +108,14 @@ def evaluate_ap(rec, gt, frame_files):
             rec_ = csum / n_gt[c]
             prec = csum / np.arange(1, len(idx) + 1)
             aps[ti, c] = voc_ap(rec_, prec)
-    ap_per_cls = np.nanmean(aps, axis=1)          # 每个 IoU 档的 mAP
+    ap_per_cls = np.mean(aps[:, n_gt > 0], axis=1) if (n_gt > 0).any() else np.zeros(len(IOU_THRS))          # 每个 IoU 档的 mAP
     i75 = int(np.argmin(np.abs(IOU_THRS - 0.75)))
     return {
         'map50': float(ap_per_cls[0]),
         'map': float(ap_per_cls.mean()),
         'ap75': float(ap_per_cls[i75]),
-        'per_class_ap50': {CLASS_NAMES[c]: float(aps[0, c]) for c in range(8)},
-        'per_class_ap': {CLASS_NAMES[c]: float(np.nanmean(aps[:, c])) for c in range(8)},
+        'per_class_ap50': {CLASS_NAMES[c]: float(aps[0, c]) if n_gt[c] > 0 else None for c in range(8)},
+        'per_class_ap': {CLASS_NAMES[c]: float(aps[:, c].mean()) if n_gt[c] > 0 else None for c in range(8)},
     }
 
 
@@ -215,7 +217,7 @@ def diagnose_temporal(rec, gt, frame_files):
 # ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--preds-dir', default=r'D:\lunwen\自研\query_prop_b0\stream_preds')
+    ap.add_argument('--preds-dir', default=str(EVAL_DIR / 'b0_records'))
     ap.add_argument('--configs', nargs='+', default=['a0', 'a1', 'b0', 'u0'])
     ap.add_argument('--ann', default=os.path.join(DATA, 'annotations_val.json'))
     ap.add_argument('--stream-index', default=os.path.join(DATA, 'stream_index.json'))
@@ -279,10 +281,10 @@ def main():
     results['_compare'] = cmp_
 
     out = args.out or os.path.join(
-        r'D:\lunwen\自研\query_prop_b0',
+        str(EVAL_DIR),
         f'out_b0_eval{"_" + args.suffix if args.suffix else ""}.json')
     with open(out, 'w', encoding='utf-8') as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+        json.dump(results, f, ensure_ascii=False, indent=2, allow_nan=False)
     log(f'已写入 {out}')
 
 

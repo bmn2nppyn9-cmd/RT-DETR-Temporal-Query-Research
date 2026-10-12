@@ -1,0 +1,2 @@
+# Validated checkpoint serialization dependency on Windows.
+polars==1.32.3
