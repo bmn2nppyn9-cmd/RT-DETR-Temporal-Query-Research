@@ -1,0 +1,26 @@
+# Argoverse-HD —— 本地转换版 (非官方下载路径)
+# 由 build_yolo_dataset.py 生成的 YOLO 布局
+#
+# 与官方 ultralytics/cfg/datasets/Argoverse.yaml 的区别:
+#   官方假定 <path>/Argoverse-1.1/images|labels/{train,val}/
+#   本地是 <path>/argoverse-hd-yolo/images|labels/{train,val}/, 图片是软链
+#
+# 注意: 不要用官方 Argoverse.yaml 配 --data, 它的 download 段会触发重下 31.5GB
+
+path: D:/lunwen/自研/数据集/argoverse-hd-yolo
+
+train: images/train
+val: images/val
+# test 不设: 官方 test split 无公开标注 (ndjson 里 12507 张 0 框)
+
+# 类目 —— 顺序必须与 prepare_argoverse.py 的 CLASS_NAMES 完全一致
+# (prepare 里 category_id = 索引+1, build_yolo_dataset.py 用 --cat-shift -1 还原)
+names:
+  0: person
+  1: bicycle
+  2: car
+  3: motorcycle
+  4: bus
+  5: truck
+  6: traffic_light
+  7: stop_sign

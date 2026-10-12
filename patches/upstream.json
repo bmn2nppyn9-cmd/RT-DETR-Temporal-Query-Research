@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/ultralytics/ultralytics.git",
+  "base_commit": "5a64e9e65b5cf66876c8bdce44345b6b279f5ee3",
+  "research_commit": "943bb3efc91b89c8e5105543c31af7d19792600a",
+  "research_branch": "depth-aligned-propagation-b1a",
+  "files": [
+    "ultralytics/nn/modules/head.py",
+    "ultralytics/nn/modules/transformer.py",
+    "ultralytics/nn/tasks.py",
+    "ultralytics/models/utils/loss.py"
+  ]
+}

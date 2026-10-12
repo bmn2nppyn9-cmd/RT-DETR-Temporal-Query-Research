@@ -1,0 +1,113 @@
+[
+  {
+    "config": "b1a0",
+    "desc": "3L/300 current 训练基线",
+    "struct": {
+      "ndl": 3,
+      "nq": 300,
+      "nd": 0
+    },
+    "pair": false,
+    "epochs": 3,
+    "train_minutes": 22.5,
+    "best_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1a0\\weights\\best.pt",
+    "last_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1a0\\weights\\last.pt",
+    "val_a0_metrics": {
+      "map50": 0.4475910200900269,
+      "map": 0.24824488425515498,
+      "note": "A0 口径(temporal 关闭), 仅作健康检查, 非 B1a 判据"
+    }
+  },
+  {
+    "config": "b1ac25",
+    "desc": "3L/325 current 等 query 数对照",
+    "struct": {
+      "ndl": 3,
+      "nq": 325,
+      "nd": 0,
+      "eval_topk": 300
+    },
+    "pair": false,
+    "epochs": 3,
+    "train_minutes": 22.1,
+    "best_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1ac25\\weights\\best.pt",
+    "last_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1ac25\\weights\\last.pt",
+    "val_a0_metrics": {
+      "map50": 0.4448781944567874,
+      "map": 0.24681488561726692,
+      "note": "A0 口径(temporal 关闭), 仅作健康检查, 非 B1a 判据"
+    }
+  },
+  {
+    "config": "b1at31",
+    "desc": "S3→L1 前 深度错位对照",
+    "struct": {
+      "ndl": 3,
+      "nq": 300,
+      "nd": 0,
+      "temporal": {
+        "M": 25,
+        "source_depth": 3,
+        "injection_layer": 0
+      }
+    },
+    "pair": true,
+    "epochs": 3,
+    "train_minutes": 27.3,
+    "best_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1at31\\weights\\best.pt",
+    "last_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1at31\\weights\\last.pt",
+    "val_a0_metrics": {
+      "map50": 0.443947332352471,
+      "map": 0.24446669731651377,
+      "note": "A0 口径(temporal 关闭), 仅作健康检查, 非 B1a 判据"
+    }
+  },
+  {
+    "config": "b1at23",
+    "desc": "S2→L3 前 候选",
+    "struct": {
+      "ndl": 3,
+      "nq": 300,
+      "nd": 0,
+      "temporal": {
+        "M": 25,
+        "source_depth": 2,
+        "injection_layer": 2
+      }
+    },
+    "pair": true,
+    "epochs": 3,
+    "train_minutes": 27.0,
+    "best_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1at23\\weights\\best.pt",
+    "last_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1at23\\weights\\last.pt",
+    "val_a0_metrics": {
+      "map50": 0.4479301927457628,
+      "map": 0.24506124454813058,
+      "note": "A0 口径(temporal 关闭), 仅作健康检查, 非 B1a 判据"
+    }
+  },
+  {
+    "config": "b1at33",
+    "desc": "S3→L3 前 候选",
+    "struct": {
+      "ndl": 3,
+      "nq": 300,
+      "nd": 0,
+      "temporal": {
+        "M": 25,
+        "source_depth": 3,
+        "injection_layer": 2
+      }
+    },
+    "pair": true,
+    "epochs": 3,
+    "train_minutes": 27.0,
+    "best_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1at33\\weights\\best.pt",
+    "last_pt": "D:\\lunwen\\自研\\b1a_pair\\runs\\b1at33\\weights\\last.pt",
+    "val_a0_metrics": {
+      "map50": 0.4439792614162809,
+      "map": 0.24631641388607106,
+      "note": "A0 口径(temporal 关闭), 仅作健康检查, 非 B1a 判据"
+    }
+  }
+]

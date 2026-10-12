@@ -1,0 +1,956 @@
+diff --git a/ultralytics/models/utils/loss.py b/ultralytics/models/utils/loss.py
+index 4cf5b49bd..1faa19935 100644
+--- a/ultralytics/models/utils/loss.py
++++ b/ultralytics/models/utils/loss.py
+@@ -212,7 +212,10 @@ class DETRLoss(nn.Module):
+             (dict[str, torch.Tensor]): Dictionary of auxiliary losses.
+         """
+         # NOTE: loss class, bbox, giou, mask, dice
+-        loss = torch.zeros(5 if masks is not None else 3, device=pred_bboxes.device)
++        # B1a: per-layer predictions may arrive as a list (query counts differ after temporal injection);
++        # take the device from the last layer in that case.
++        dev = pred_bboxes[-1].device if isinstance(pred_bboxes, (list, tuple)) else pred_bboxes.device
++        loss = torch.zeros(5 if masks is not None else 3, device=dev)
+         if match_indices is None and self.use_uni_match:
+             match_indices = self.matcher(
+                 pred_bboxes[self.uni_match_ind],
+@@ -372,7 +375,8 @@ class DETRLoss(nn.Module):
+             Uses last elements of pred_bboxes and pred_scores for main loss, and the rest for auxiliary losses if
+             self.aux_loss is True.
+         """
+-        self.device = pred_bboxes.device
++        # B1a: per-layer predictions may arrive as a list (query counts differ after temporal injection).
++        self.device = (pred_bboxes[-1] if isinstance(pred_bboxes, (list, tuple)) else pred_bboxes).device
+         match_indices = kwargs.get("match_indices", None)
+         gt_cls, gt_bboxes, gt_groups = batch["cls"], batch["bboxes"], batch["gt_groups"]
+ 
+diff --git a/ultralytics/nn/modules/head.py b/ultralytics/nn/modules/head.py
+index c87247608..5892f1891 100644
+--- a/ultralytics/nn/modules/head.py
++++ b/ultralytics/nn/modules/head.py
+@@ -1462,6 +1462,59 @@ class RTDETRDecoder(nn.Module):
+     valid_mask = torch.empty(0)
+     dynamic = False
+ 
++    # Temporal query propagation probe (eval-only, disabled by default). Declared at class level so that
++    # checkpoints pickled before this feature existed still resolve the attributes on unpickle (instance
++    # __dict__ restored from an old pickle bypasses __init__). When disabled every code path is identical
++    # to the original implementation; nothing below touches training.
++    temporal_enabled = False  # master switch for previous-frame query propagation
++    num_temporal_queries = 75  # propagated queries appended after the current encoder queries
++    temporal_motion_alpha = 0.0  # 0 -> box_t = box_(t-1); 0.5 -> + 0.5 * velocity
++    temporal_motion_match_iou = 0.3  # class-agnostic IoU for velocity association
++    _temporal_state = None  # multi-depth previous-frame state, see _update_temporal_state()
++    _encoder_query_override = None  # control group: more current-frame encoder queries (A1)
++    _output_topk_override = None  # final detections cap (defaults to num_queries)
++    _last_topk_meta = None  # per-output query_idx / scores / source / source_depth / injection_layer
++    _last_decoder_query_count = 0  # actual decoder input width of the last forward (diagnostics)
++    _last_n_current = 0  # current-frame encoder query count of the last forward (diagnostics)
++
++    # Query-depth probe (eval-only, disabled by default). Layered on top of the temporal probe:
++    #   return_all_layers: export per-layer decoder states after each forward (QD-O oracle export)
++    #   temporal_source_depth / temporal_injection_layer / temporal_fuse_after: staged temporal injection
++    #     (QD-T scan). temporal_fuse_after bypasses the decoder entirely (T3O lower-bound reference)
++    #   time_decoder_cuda: CUDA-Event timing around the decoder call (latency reporting)
++    return_all_layers = False
++    _last_layer_states = None  # {layer: (hidden, box, logits, refer_in)} detached, from the last forward
++    _last_layer_widths = None  # {layer: query width} of the last decoder pass when layer states were collected
++    temporal_source_depth = 3  # 0..3: propagate S0 (encoder) .. S3 (L3) query states of the previous frame
++    temporal_injection_layer = 0  # 0/1/2: decoder layer before which temporal queries are appended
++    temporal_fuse_after = False  # append previous-frame L3 results after the decoder (no decoder pass)
++    time_decoder_cuda = False
++    _last_decoder_ms = 0.0
++
++    # Query-depth schedule probe (QD-P, eval-only, disabled by default): staged query exit by per-layer width
++    # schedule. Exited queries freeze their layer output; later layers really run on the surviving subset.
++    exit_schedule = None  # e.g. [300, 150, 75]: width entering each layer; first entry must equal query count
++    exit_policy = 'confidence'  # confidence | stability | confidence+stability | random | gt_oracle
++    _exit_masks = None  # per-frame precomputed {layer: (B, Q_i) bool} masks for random / gt_oracle (caller-set)
++    _last_exit_ann = None  # (B, 300): -1 = ran to eval layer, i = exited after layer i
++    _last_exit_widths = None  # [q0, width_l2, width_l3, ...] of the last forward when an exit plan was active
++    _last_dec_boxes = None  # merged per-query boxes of the exit path (diagnostics)
++    time_model_cuda = False
++    _last_model_ms = 0.0
++
++    # B1a depth-aligned temporal query propagation (training feature, branch depth-aligned-propagation-b1a).
++    # b1a_struct_override: class-level dict set BEFORE model construction, keys:
++    #   nq / ndl / nd: structural overrides (num queries, decoder layers, denoising) so one yaml serves all
++    #       B1a configs; nd=0 cleanly disables denoising (get_cdn_group returns all-None).
++    #   eval_topk: postprocess output cap for the trained model (e.g. 325-query control still outputs 300).
++    #   temporal: None for controls, else dict(M, source_depth, injection_layer) enabling the pair-training
++    #       path (extract_pair_state / forward_train_pair) and creating temporal_adapter / temporal_src_embed.
++    # Declared at class level so checkpoints pickled without these attrs still unpickle (instance __dict__
++    # bypasses __init__; missing attrs resolve on the class).
++    b1a_struct_override = None
++    b1a_eval_topk = None  # instance attr set from override; class default for old checkpoints
++    b1a_temporal_spec = None
++
+     def __init__(
+         self,
+         nc: int = 80,
+@@ -1501,6 +1554,11 @@ class RTDETRDecoder(nn.Module):
+             learnt_init_query (bool): Whether to learn initial query embeddings.
+         """
+         super().__init__()
++        # B1a structural overrides take precedence over the signature defaults (class-level dict).
++        ovr = type(self).b1a_struct_override or {}
++        nq, ndl, nd = ovr.get('nq', nq), ovr.get('ndl', ndl), ovr.get('nd', nd)
++        self.b1a_eval_topk = ovr.get('eval_topk')
++        self.b1a_temporal_spec = ovr.get('temporal')
+         self.hidden_dim = hd
+         self.nhead = nh
+         self.nl = len(ch)  # num level
+@@ -1540,6 +1598,234 @@ class RTDETRDecoder(nn.Module):
+ 
+         self._reset_parameters()
+ 
++        # B1a temporal source adaptation (only for temporal configs). Both start as exact identities so an
++        # untrained model degenerates to the frozen-injection probe behavior (regression anchor R6).
++        if self.b1a_temporal_spec is not None:
++            self.temporal_adapter = nn.Linear(hd, hd)
++            nn.init.eye_(self.temporal_adapter.weight)
++            nn.init.zeros_(self.temporal_adapter.bias)
++            self.temporal_src_embed = nn.Parameter(torch.zeros(1, 1, hd))
++
++    # ------------------------------------------------------------------ temporal probe API (eval-only)
++    def set_temporal_enabled(self, flag: bool):
++        """Enable or disable previous-frame query propagation. Disabling also clears the temporal state."""
++        self.temporal_enabled = bool(flag)
++        if not flag:
++            self._temporal_state = None
++
++    def reset_temporal_state(self):
++        """Drop any propagated state. Must be called at scene boundaries and after config changes."""
++        self._temporal_state = None
++
++    def set_query_overrides(
++        self,
++        encoder_queries: int | None = None,
++        temporal_queries: int | None = None,
++        output_topk: int | None = None,
++        motion_alpha: float | None = None,
++        motion_match_iou: float | None = None,
++    ):
++        """Configure query-count concepts independently (eval-only probe).
++
++        Args:
++            encoder_queries: Current-frame encoder top-k query count (default num_queries=300; 375 for control A1).
++            temporal_queries: Number of propagated previous-frame queries appended after the current ones.
++            output_topk: Final detection cap in postprocess (default num_queries=300).
++            motion_alpha: Position extrapolation weight; 0.0 disables motion (box_t = box_(t-1)).
++            motion_match_iou: Class-agnostic IoU threshold used when estimating per-query velocity.
++        """
++        if encoder_queries is not None:
++            self._encoder_query_override = int(encoder_queries)
++        if temporal_queries is not None:
++            self.num_temporal_queries = int(temporal_queries)
++        if output_topk is not None:
++            self._output_topk_override = int(output_topk)
++        if motion_alpha is not None:
++            self.temporal_motion_alpha = float(motion_alpha)
++        if motion_match_iou is not None:
++            self.temporal_motion_match_iou = float(motion_match_iou)
++
++    def set_temporal_config(
++        self,
++        source_depth: int | None = None,
++        injection_layer: int | None = None,
++        fuse_after: bool | None = None,
++    ):
++        """Configure the staged temporal injection probe (eval-only, QD-T).
++
++        Args:
++            source_depth: Which previous-frame state to propagate: 0 = encoder content/proposal (S0),
++                1/2/3 = L1/L2/L3 hidden + refined box (S1..S3).
++            injection_layer: Decoder layer before which the temporal queries are appended (0/1/2).
++            fuse_after: If True, previous-frame L3 results are appended after the decoder instead of being
++                injected into it (T3O lower-bound reference).
++        """
++        if source_depth is not None:
++            self.temporal_source_depth = int(source_depth)
++        if injection_layer is not None:
++            self.temporal_injection_layer = int(injection_layer)
++        if fuse_after is not None:
++            self.temporal_fuse_after = bool(fuse_after)
++
++    def set_exit_plan(self, schedule: list[int] | None = None, policy: str | None = None):
++        """Configure the staged query-exit probe (eval-only, QD-P).
++
++        Args:
++            schedule: Per-layer query widths, e.g. [300, 150, 75] for widths entering L1/L2/L3. After each layer
++                i, queries exit until the next layer's width is met; the first entry must equal the current
++                query count. None disables the probe.
++            policy: How exits are chosen — 'confidence', 'stability', 'confidence+stability' (decided online
++                inside the decoder), or 'random' / 'gt_oracle' (masks precomputed per frame by the caller in
++                self._exit_masks; the model itself never sees GT).
++        """
++        if schedule is None:
++            self.exit_schedule = None  # disable the probe
++            self._exit_masks = None
++        else:
++            self.exit_schedule = [int(x) for x in schedule]
++        if policy is not None:
++            self.exit_policy = str(policy)
++
++    def _select_exit_mask(
++        self,
++        i: int,
++        output: torch.Tensor,
++        refined_bbox: torch.Tensor,
++        cls_logits: torch.Tensor,
++        refer_in: torch.Tensor,
++    ) -> torch.Tensor:
++        """Choose which queries exit after decoder layer i (eval-only probe, online policies).
++
++        Returns a bool mask (B, Q) aligned with the current query slots. The number of exits is fixed by
++        self.exit_schedule (the width entering layer i+1); the ranking depends on exit_policy:
++          confidence: keep the highest max-class scores;
++          stability: keep the queries whose boxes moved least since the layer input (small refinement step);
++          confidence+stability: keep the highest score * (1 - box_delta).
++        """
++        n_next = self.exit_schedule[i + 1]
++        if n_next >= cls_logits.shape[1]:
++            return torch.zeros_like(cls_logits[..., 0], dtype=torch.bool)
++        if self.exit_policy == 'stability':
++            rank = -(refined_bbox - refer_in).abs().mean(-1)  # (B, Q)
++        else:
++            score = cls_logits.sigmoid().amax(-1)
++            if self.exit_policy == 'confidence':
++                rank = score
++            else:  # confidence+stability
++                rank = score * (1.0 - (refined_bbox - refer_in).abs().mean(-1))
++        keep = rank.topk(n_next, dim=1).indices  # (B, n_next)
++        mask = torch.ones_like(rank, dtype=torch.bool)
++        mask.scatter_(1, keep, False)
++        return mask
++
++    def temporal_status(self) -> dict:
++        """Report the probe configuration and whether a previous-frame state is currently held."""
++        return {
++            'temporal_enabled': self.temporal_enabled,
++            'has_state': self._temporal_state is not None,
++            'num_temporal_queries': self.num_temporal_queries,
++            'encoder_queries': self._encoder_query_override or self.num_queries,
++            'output_topk': self._output_topk_override or self.num_queries,
++            'motion_alpha': self.temporal_motion_alpha,
++            'source_depth': self.temporal_source_depth,
++            'injection_layer': self.temporal_injection_layer,
++            'fuse_after': self.temporal_fuse_after,
++            'exit_schedule': self.exit_schedule,
++            'exit_policy': self.exit_policy,
++            'last_decoder_query_count': self._last_decoder_query_count,
++        }
++
++    def _gather_temporal_state(self) -> tuple[torch.Tensor, torch.Tensor] | None:
++        """Gather the temporal (embed_add, refer_add) pair from the configured source depth.
++
++        embed_add carries the stored hidden/content tensor (1, M, 256); refer_add carries the stored box in
++        sigmoid space (1, M, 4) because mid-layer injection happens after the decoder has already sigmoid()'ed
++        the initial refer_bbox. Returns None when no previous-frame state is held (scene first frame).
++        """
++        st = self._temporal_state
++        if st is None:
++            return None
++        boxes = st['boxes'][self.temporal_source_depth]
++        if self.temporal_motion_alpha:
++            boxes = boxes + self.temporal_motion_alpha * st['velocity']
++        boxes = boxes.clamp(1e-4, 1.0 - 1e-4)
++        embed_out = st['hidden'][self.temporal_source_depth]
++        # B1a: a trained temporal model carries a source adapter/embedding. The eval injection path must apply
++        # the same transformation as the training path, otherwise record/eval would not match training.
++        if getattr(self, 'temporal_adapter', None) is not None:
++            embed_out = self.temporal_adapter(embed_out) + self.temporal_src_embed
++        return embed_out, boxes
++
++    @staticmethod
++    def _cxcywh_iou(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
++        """Pairwise IoU between cxcywh boxes, a: (B, N, 4), b: (B, M, 4) -> (B, N, M)."""
++        a_xyxy = torch.cat([a[..., :2] - a[..., 2:] / 2, a[..., :2] + a[..., 2:] / 2], -1)
++        b_xyxy = torch.cat([b[..., :2] - b[..., 2:] / 2, b[..., :2] + b[..., 2:] / 2], -1)
++        lt = torch.maximum(a_xyxy[:, :, None, :2], b_xyxy[:, None, :, :2])
++        rb = torch.minimum(a_xyxy[:, :, None, 2:], b_xyxy[:, None, :, 2:])
++        wh = (rb - lt).clamp(min=0)
++        inter = wh[..., 0] * wh[..., 1]
++        area_a = a[..., 2] * a[..., 3]
++        area_b = b[..., 2] * b[..., 3]
++        return inter / (area_a[:, :, None] + area_b[:, None, :] - inter).clamp(min=1e-9)
++
++    def _update_temporal_state(
++        self,
++        layer_states: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]],
++        embed0: torch.Tensor,
++        enc_bboxes: torch.Tensor,
++    ) -> None:
++        """Store the previous frame's query states at every depth (S0..S3) for the same top-M query slots.
++
++        Selection is by the L3 per-query max class score (score3) restricted to the first n_current (encoder)
++        queries, so propagated queries never re-enter the state and every source depth carries the exact same
++        query slots (source depth is isolated from selection). S0 is the encoder content/proposal before L1;
++        S1..S3 are the per-layer hidden/refined-box outputs; logits3 keeps the full L3 class logits (T3O fuse).
++        Velocity is a class-agnostic IoU association against the previous state's S3 boxes and is only used
++        when temporal_motion_alpha != 0.
++        """
++        n = self._last_n_current
++        h3, b3, l3, _ = layer_states[2]
++        h3, b3, l3 = h3[:, :n], b3[:, :n], l3[:, :n]
++        scores = l3.sigmoid().amax(-1)  # (B, n)
++        m = min(self.num_temporal_queries, n)
++        top = scores.topk(m, dim=1).indices  # (B, m)
++        bs = embed0.shape[0]
++        bi = torch.arange(bs, device=embed0.device).unsqueeze(-1)
++
++        def pick(x: torch.Tensor) -> torch.Tensor:
++            return x[bi, top].detach().clone()
++
++        h1, b1, _, _ = layer_states[0]
++        h2, b2, _, _ = layer_states[1]
++        new_boxes3 = pick(b3)
++        velocity = torch.zeros_like(new_boxes3)
++        prev = self._temporal_state
++        if prev is not None:
++            iou = self._cxcywh_iou(new_boxes3, prev['boxes'][3])  # (B, m, M_prev)
++            best = iou.argmax(-1)
++            ok = iou.gather(-1, best.unsqueeze(-1)).squeeze(-1) >= self.temporal_motion_match_iou
++            delta = new_boxes3 - prev['boxes'][3][bi, best]
++            velocity = torch.where(ok.unsqueeze(-1), delta, torch.zeros_like(delta)).detach()
++        self._temporal_state = {
++            'idx': top.detach().clone(),
++            'hidden': {
++                0: pick(embed0),
++                1: pick(h1[:, :n]),
++                2: pick(h2[:, :n]),
++                3: pick(h3),
++            },
++            'boxes': {
++                0: pick(enc_bboxes),
++                1: pick(b1[:, :n]),
++                2: pick(b2[:, :n]),
++                3: new_boxes3,
++            },
++            'logits3': pick(l3),
++            'scores3': pick(scores),
++            'velocity': velocity,
++        }
++
+     def forward(self, x: list[torch.Tensor], batch: dict | None = None) -> tuple | torch.Tensor:
+         """Run the forward pass of the module, returning bounding box and classification scores for the input.
+ 
+@@ -1554,6 +1840,11 @@ class RTDETRDecoder(nn.Module):
+         """
+         from ultralytics.models.utils.ops import get_cdn_group
+ 
++        t0m = t1m = None
++        if self.time_model_cuda and torch.cuda.is_available() and not self.training:
++            t0m, t1m = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
++            t0m.record()
++
+         # Input projection and embedding
+         feats, shapes = self._get_encoder_input(x)
+ 
+@@ -1569,44 +1860,324 @@ class RTDETRDecoder(nn.Module):
+             self.training,
+         )
+ 
++        if self.training and (
++            self.temporal_enabled
++            or self._encoder_query_override
++            or self._output_topk_override
++            or self.return_all_layers
++            or self.time_decoder_cuda
++            or self.time_model_cuda
++            or self.exit_schedule is not None
++        ):
++            raise RuntimeError('temporal/query-override probe is eval-only; disable it before training')
++
+         embed, refer_bbox, enc_bboxes, enc_scores = self._get_decoder_input(feats, shapes, dn_embed, dn_bbox)
+ 
++        # Temporal query propagation probe: append previous-frame queries at the configured decoder layer, or
++        # fuse their previous-frame results after the decoder. Disabled by default; skipped during training.
++        use_temporal = self.temporal_enabled and not self.training
++        fuse_after = use_temporal and self.temporal_fuse_after
++        collect_states = use_temporal or self.return_all_layers
++        self._last_n_current = embed.shape[1]
++        self._last_layer_states = None
++        self._last_layer_widths = None
++
++        inject_at = None
++        n_temporal = 0
++        if use_temporal and not fuse_after:
++            gathered = self._gather_temporal_state()
++            if gathered is not None:
++                embed_add, refer_add = gathered
++                n_temporal = embed_add.shape[1]
++                inject_at = {self.temporal_injection_layer: (embed_add, refer_add)}
++        self._last_decoder_query_count = embed.shape[1] + n_temporal
++
++        # Staged query exit (QD-P): online policies decide inside the decoder; random / gt_oracle use the
++        # per-frame masks the caller placed in _exit_masks. Exits and temporal injection are mutually exclusive.
++        use_exit = self.exit_schedule is not None and not self.training
++        if use_exit and use_temporal:
++            raise RuntimeError('query-exit probe cannot be combined with the temporal probe')
++        exit_plan = None
++        exit_selector = None
++        if use_exit:
++            if self.exit_policy in ('random', 'gt_oracle'):
++                exit_plan = self._exit_masks
++            else:
++                exit_selector = self._select_exit_mask
++        exit_ann = None
++
+         # Decoder
+-        dec_bboxes, dec_scores = self.decoder(
+-            embed,
+-            refer_bbox,
+-            feats,
+-            shapes,
+-            self.dec_bbox_head,
+-            self.dec_score_head,
+-            self.query_pos_head,
+-            attn_mask=attn_mask,
+-        )
++        t0 = t1 = None
++        if self.time_decoder_cuda and torch.cuda.is_available() and not self.training:
++            t0, t1 = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
++            t0.record()
++        if use_exit:
++            dec_bboxes, dec_scores, exit_ann = self.decoder(
++                embed,
++                refer_bbox,
++                feats,
++                shapes,
++                self.dec_bbox_head,
++                self.dec_score_head,
++                self.query_pos_head,
++                attn_mask=attn_mask,
++                exit_plan=exit_plan,
++                exit_selector=exit_selector,
++            )
++            layer_states = None
++        elif collect_states:
++            dec_bboxes, dec_scores, _, layer_states = self.decoder(
++                embed,
++                refer_bbox,
++                feats,
++                shapes,
++                self.dec_bbox_head,
++                self.dec_score_head,
++                self.query_pos_head,
++                attn_mask=attn_mask,
++                inject_at=inject_at,
++                return_layer_states=True,
++            )
++        else:
++            dec_bboxes, dec_scores = self.decoder(
++                embed,
++                refer_bbox,
++                feats,
++                shapes,
++                self.dec_bbox_head,
++                self.dec_score_head,
++                self.query_pos_head,
++                attn_mask=attn_mask,
++            )
++            layer_states = None
++        if t0 is not None:
++            t1.record()
++            torch.cuda.synchronize()
++            self._last_decoder_ms = t0.elapsed_time(t1)
++
+         if self.training and dn_meta is None:
+             # Touch denoising_class_embed so DDP sees it as used when batch has zero GTs.
+             dec_bboxes = dec_bboxes + 0 * self.denoising_class_embed.weight.sum()
+         x = dec_bboxes, dec_scores, enc_bboxes, enc_scores, dn_meta
+         if self.training:
+             return x
++
++        # Source annotation for the final top-k: current encoder queries come first, propagated queries last.
++        # injection_layer = -2 (never injected), 0/1/2 (layer before which the query was appended), -1 (fused
++        # after the decoder, T3O).
++        query_source = None
++        query_source_depth = None
++        query_injection = None
++        if use_temporal and self._temporal_state is not None:
++            n_cur = self._last_n_current
++            st = self._temporal_state
++            m_t = st['idx'].shape[1]
++            bsq = dec_bboxes.shape[1]  # batch dim of the stacked decoder output (1, bs, q, ...)
++            if fuse_after:
++                # Lower-bound reference: previous-frame L3 box + logits re-enter only the top-k, no decoder pass.
++                t_box = st['boxes'][3]
++                if self.temporal_motion_alpha:
++                    t_box = t_box + self.temporal_motion_alpha * st['velocity']
++                    t_box = t_box.clamp(1e-4, 1.0 - 1e-4)
++                dec_bboxes = torch.cat([dec_bboxes, t_box.unsqueeze(1)], 2)
++                dec_scores = torch.cat([dec_scores, st['logits3'].unsqueeze(1)], 2)
++                inj_ann = -1
++            else:
++                inj_ann = self.temporal_injection_layer
++            query_source = torch.cat(
++                [
++                    torch.zeros(bsq, n_cur, dtype=torch.long, device=dec_bboxes.device),
++                    torch.ones(bsq, m_t, dtype=torch.long, device=dec_bboxes.device),
++                ],
++                1,
++            )
++            query_source_depth = torch.cat(
++                [
++                    torch.zeros(bsq, n_cur, dtype=torch.long, device=dec_bboxes.device),
++                    torch.full((bsq, m_t), self.temporal_source_depth, dtype=torch.long, device=dec_bboxes.device),
++                ],
++                1,
++            )
++            query_injection = torch.cat(
++                [
++                    torch.full((bsq, n_cur), -2, dtype=torch.long, device=dec_bboxes.device),
++                    torch.full((bsq, m_t), inj_ann, dtype=torch.long, device=dec_bboxes.device),
++                ],
++                1,
++            )
+         # (bs, num_queries, 4), (bs, num_queries, nc)
+-        y = self.postprocess(dec_bboxes.squeeze(0), dec_scores.squeeze(0).sigmoid())
++        y = self.postprocess(
++            dec_bboxes.squeeze(0),
++            dec_scores.squeeze(0).sigmoid(),
++            query_source=query_source,
++            query_source_depth=query_source_depth,
++            query_injection=query_injection,
++            query_exit_layer=exit_ann,
++        )
++        if use_temporal:
++            self._update_temporal_state(layer_states, embed, enc_bboxes)
++        if collect_states:
++            self._last_layer_states = {k: tuple(t.detach() for t in v) for k, v in layer_states.items()}
++            self._last_layer_widths = {k: v[0].shape[1] for k, v in layer_states.items()}
++        if use_exit:
++            self._last_exit_ann = exit_ann.detach()
++            self._last_dec_boxes = dec_bboxes.detach()  # merged per-query boxes of the exit path (diagnostics)
++            ann = exit_ann[0]
++            q0 = ann.shape[0]
++            widths = [q0]
++            for li in range(1, self.decoder.eval_idx + 1):
++                widths.append(int(((ann == -1) | (ann >= li)).sum()))
++            self._last_exit_widths = widths
++        if t0m is not None:
++            t1m.record()
++            torch.cuda.synchronize()
++            self._last_model_ms = t0m.elapsed_time(t1m)
+         return y if self.export else (y, x)
+ 
+-    def postprocess(self, boxes: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
++    # ------------------------------------------------------------------ B1a pair training API
++    @torch.no_grad()
++    def extract_pair_state(self, x: list[torch.Tensor]) -> dict:
++        """Extract the previous frame's temporal state from FPN features (B1a training).
++
++        Uses the same selection rule as deployment: top-M queries by last-layer max-class sigmoid score
++        (deterministic torch.topk). Must be called in eval mode so batchnorm uses running statistics,
++        matching how the state is produced at inference time.
++
++        Args:
++            x (list[torch.Tensor]): FPN feature maps of the previous frame.
++
++        Returns:
++            (dict): hidden/boxes keyed by source depth (2 = after L2, 3 = after L3), plus selection scores
++                and query indices. All tensors are detached clones; contains no GT and no current-frame data.
++        """
++        if self.training:
++            raise RuntimeError('extract_pair_state must run in eval mode (caller switches to eval first)')
++        spec = self.b1a_temporal_spec
++        feats, shapes = self._get_encoder_input(x)
++        embed, refer_bbox, enc_bboxes, enc_scores = self._get_decoder_input(feats, shapes)
++        _, _, _, layer_states = self.decoder(
++            embed, refer_bbox, feats, shapes, self.dec_bbox_head, self.dec_score_head, self.query_pos_head,
++            return_layer_states=True)
++        li = self.decoder.eval_idx  # S3 = state after the eval layer; S2 = one layer earlier
++        h3, b3, l3, _ = layer_states[li]
++        h2, b2, _, _ = layer_states[li - 1]
++        scores = l3.sigmoid().amax(-1)  # (bs, n)
++        m = min(int(spec['M']), h3.shape[1])
++        top = scores.topk(m, dim=1).indices
++        bi = torch.arange(embed.shape[0], device=embed.device).unsqueeze(-1)
++
++        def pick(t: torch.Tensor) -> torch.Tensor:
++            return t[bi, top].detach().clone()
++
++        return {
++            'hidden': {2: pick(h2), 3: pick(h3)},
++            'boxes': {2: pick(b2), 3: pick(b3)},
++            'scores': pick(scores),
++            'idx': top.detach().clone(),
++        }
++
++    def forward_train_pair(self, x: list[torch.Tensor], batch: dict, state: dict | None) -> tuple:
++        """Run the B1a training forward of the current frame with temporal query injection.
++
++        The current-frame path is pristine. The (detached) temporal state passes through the trainable
++        source adapter and embedding, so from that branch gradients reach only the adapter/embedding.
++        Injected reference boxes stay in sigmoid space, matching inject_at semantics.
++
++        Args:
++            x (list[torch.Tensor]): FPN feature maps of the current frame (grad enabled).
++            batch (dict): GT targets of the current frame.
++            state (dict | None): extract_pair_state output for the previous frame; None disables injection
++                (M=0 degeneration, outputs collapse to the control path).
++
++        Returns:
++            (tuple): (dec_bboxes, dec_scores, enc_bboxes, enc_scores, dn_meta) where dec_* are per-layer
++                lists when injection makes per-layer query counts differ (stacked tensor otherwise); the
++                model loss prepends the encoder output as the first element.
++        """
++        from ultralytics.models.utils.ops import get_cdn_group
++
++        spec = self.b1a_temporal_spec
++        feats, shapes = self._get_encoder_input(x)
++        dn_embed, dn_bbox, attn_mask, dn_meta = get_cdn_group(
++            batch, self.nc, self.num_queries, self.denoising_class_embed.weight, self.num_denoising,
++            self.label_noise_ratio, self.box_noise_scale, self.training)
++        embed, refer_bbox, enc_bboxes, enc_scores = self._get_decoder_input(feats, shapes, dn_embed, dn_bbox)
++
++        inject_at = None
++        if state is not None:
++            sd = int(spec['source_depth'])
++            li = int(spec['injection_layer'])
++            embed_add = self.temporal_adapter(state['hidden'][sd]) + self.temporal_src_embed
++            refer_add = state['boxes'][sd].clamp(1e-4, 1.0 - 1e-4)
++            inject_at = {li: (embed_add, refer_add)}
++
++        dec_bboxes, dec_scores = self.decoder(
++            embed, refer_bbox, feats, shapes, self.dec_bbox_head, self.dec_score_head, self.query_pos_head,
++            attn_mask=attn_mask, inject_at=inject_at)
++        # NOTE: no DDP zero-touch of denoising_class_embed here (B1a is single-GPU; dec_* may be lists).
++        return dec_bboxes, dec_scores, enc_bboxes, enc_scores, dn_meta
++
++    def postprocess(
++        self,
++        boxes: torch.Tensor,
++        scores: torch.Tensor,
++        query_source: torch.Tensor | None = None,
++        query_source_depth: torch.Tensor | None = None,
++        query_injection: torch.Tensor | None = None,
++        query_exit_layer: torch.Tensor | None = None,
++    ) -> torch.Tensor:
+         """Post-process predictions to select top-k detections.
+ 
+         Args:
+             boxes (torch.Tensor): Predicted bounding boxes with shape (batch_size, num_queries, 4) in xywh format.
+             scores (torch.Tensor): Class scores with shape (batch_size, num_queries, nc).
++            query_source (torch.Tensor, optional): Per-query origin flags with shape (batch_size, num_queries),
++                0 for current-frame encoder queries and 1 for propagated temporal queries. Only used to annotate
++                the final top-k outputs in `self._last_topk_meta`; never changes the outputs themselves.
++            query_source_depth (torch.Tensor, optional): Per-query source-depth annotation (0..3).
++            query_injection (torch.Tensor, optional): Per-query injection-layer annotation
++                (-2 never injected, 0/1/2 injected before that layer, -1 fused after the decoder).
++            query_exit_layer (torch.Tensor, optional): Per-query exit annotation for the QD-P probe
++                (-1 ran to the eval layer, i exited after layer i). Defaults to -1 everywhere.
+ 
+         Returns:
+             (torch.Tensor): Processed predictions with shape (batch_size, num_queries, 6) and last dimension format [cx,
+                 cy, w, h, max_class_prob, class_index].
+         """
+-        scores, index = scores.flatten(1).topk(self.num_queries)
++        topk = self._output_topk_override or self.b1a_eval_topk or self.num_queries
++        scores, index = scores.flatten(1).topk(topk)
+         # CoreML MIL lacks integer floor-div and mod lowering: use torch.div(rounding_mode="floor") and (index - q*nc).
+         query_idx = torch.div(index, self.nc, rounding_mode="floor")
+         boxes = boxes.gather(dim=1, index=query_idx.unsqueeze(-1).expand(-1, -1, 4).long())
++        src = (
++            torch.zeros_like(query_idx)
++            if query_source is None
++            else torch.gather(query_source, 1, query_idx.long())
++        )
++        src_depth = (
++            torch.zeros_like(query_idx)
++            if query_source_depth is None
++            else torch.gather(query_source_depth, 1, query_idx.long())
++        )
++        inj_layer = (
++            torch.full_like(query_idx, -2)
++            if query_injection is None
++            else torch.gather(query_injection, 1, query_idx.long())
++        )
++        exit_layer = (
++            torch.full_like(query_idx, -1)
++            if query_exit_layer is None
++            else torch.gather(query_exit_layer, 1, query_idx.long())
++        )
++        self._last_topk_meta = {
++            'query_idx': query_idx.detach(),
++            'scores': scores.detach(),
++            'cls': (index - query_idx * self.nc).detach(),
++            'source': src.detach(),
++            'source_depth': src_depth.detach(),
++            'injection_layer': inj_layer.detach(),
++            'exit_layer': exit_layer.detach(),
++        }
+         return torch.cat([boxes, scores[..., None], (index - query_idx * self.nc)[..., None].float()], dim=-1)
+ 
+     @staticmethod
+@@ -1700,20 +2271,24 @@ class RTDETRDecoder(nn.Module):
+             self.anchors, self.valid_mask = self._generate_anchors(shapes, dtype=feats.dtype, device=feats.device)
+             self.shapes = shapes
+ 
++        # Query-count concepts are split for the eval-only probe: the encoder top-k count can differ from
++        # self.num_queries (which still drives postprocess) so a control group can run 375 current queries.
++        nq = self._encoder_query_override or self.num_queries
++
+         # Prepare input for decoder
+         features = self.enc_output(self.valid_mask * feats)  # bs, h*w, 256
+         enc_outputs_scores = self.enc_score_head(features)  # (bs, h*w, nc)
+ 
+         # Query selection
+-        # (bs*num_queries,)
+-        topk_ind = torch.topk(enc_outputs_scores.max(-1).values, self.num_queries, dim=1).indices.view(-1)
+-        # (bs*num_queries,)
+-        batch_ind = torch.arange(end=bs, dtype=topk_ind.dtype).unsqueeze(-1).repeat(1, self.num_queries).view(-1)
++        # (bs*nq,)
++        topk_ind = torch.topk(enc_outputs_scores.max(-1).values, nq, dim=1).indices.view(-1)
++        # (bs*nq,)
++        batch_ind = torch.arange(end=bs, dtype=topk_ind.dtype).unsqueeze(-1).repeat(1, nq).view(-1)
+ 
+-        # (bs, num_queries, 256)
+-        top_k_features = features[batch_ind, topk_ind].view(bs, self.num_queries, -1)
+-        # (bs, num_queries, 4)
+-        top_k_anchors = self.anchors[:, topk_ind].view(bs, self.num_queries, -1)
++        # (bs, nq, 256)
++        top_k_features = features[batch_ind, topk_ind].view(bs, nq, -1)
++        # (bs, nq, 4)
++        top_k_anchors = self.anchors[:, topk_ind].view(bs, nq, -1)
+ 
+         # Dynamic anchors + static content
+         refer_bbox = self.enc_bbox_head(top_k_features) + top_k_anchors
+@@ -1721,7 +2296,7 @@ class RTDETRDecoder(nn.Module):
+         enc_bboxes = refer_bbox.sigmoid()
+         if dn_bbox is not None:
+             refer_bbox = torch.cat([dn_bbox, refer_bbox], 1)
+-        enc_scores = enc_outputs_scores[batch_ind, topk_ind].view(bs, self.num_queries, -1)
++        enc_scores = enc_outputs_scores[batch_ind, topk_ind].view(bs, nq, -1)
+ 
+         embeddings = self.tgt_embed.weight.unsqueeze(0).repeat(bs, 1, 1) if self.learnt_init_query else top_k_features
+         if self.training:
+diff --git a/ultralytics/nn/modules/transformer.py b/ultralytics/nn/modules/transformer.py
+index 4ac253aef..8b766c478 100644
+--- a/ultralytics/nn/modules/transformer.py
++++ b/ultralytics/nn/modules/transformer.py
+@@ -754,6 +754,11 @@ class DeformableTransformerDecoder(nn.Module):
+         pos_mlp: nn.Module,
+         attn_mask: torch.Tensor | None = None,
+         padding_mask: torch.Tensor | None = None,
++        return_hidden: bool = False,
++        inject_at: dict[int, tuple[torch.Tensor, torch.Tensor]] | None = None,
++        return_layer_states: bool = False,
++        exit_plan: dict[int, torch.Tensor] | None = None,
++        exit_selector: callable | None = None,
+     ):
+         """Perform the forward pass through the entire decoder.
+ 
+@@ -767,34 +772,142 @@ class DeformableTransformerDecoder(nn.Module):
+             pos_mlp (nn.Module): Position MLP.
+             attn_mask (torch.Tensor, optional): Attention mask.
+             padding_mask (torch.Tensor, optional): Padding mask.
++            return_hidden (bool): If True, additionally return the hidden states at the eval layer with shape
++                (bs, num_queries, hidden_dim), aligned row-by-row with dec_bboxes/dec_cls. Defaults to False, which
++                keeps the original 2-tuple return and behavior unchanged.
++            inject_at (dict[int, tuple[torch.Tensor, torch.Tensor]], optional): Eval-only probe. Maps a layer index
++                to an (embed_add, refer_add) pair that is appended to the running queries right before that layer
++                executes, so the extra queries only pass through that layer and the ones after it. The appended
++                refer_add must already be in sigmoid space, because the initial refer_bbox was sigmoid()'ed before
++                the loop. Defaults to None, which keeps the original behavior unchanged.
++            return_layer_states (bool): Eval-only probe. If True, also return per-layer states for every executed
++                layer as dict layer -> (hidden, refined_bbox, logits, refer_in), each aligned row-by-row and in
++                slot order, where refer_in is the sigmoid-space reference box fed into that layer. Defaults to
++                False, which keeps the original 2-tuple return and behavior unchanged.
++            exit_plan (dict[int, torch.Tensor], optional): Eval-only probe (QD-P). Maps a layer index i (below
++                eval_idx) to a bool mask (bs, Q_i) of queries that exit right after layer i: their layer-i
++                (box, logits) are frozen and skip all later layers, and later layers really run on the reduced
++                subset (self-attention sees only the surviving queries). The final output merges frozen and
++                surviving queries back into the original slot order. Defaults to None.
++            exit_selector (callable, optional): Eval-only probe (QD-P). Alternative to exit_plan for online
++                policies; called as exit_selector(i, output, refined_bbox, cls_logits, refer_in) after every
++                layer below eval_idx and must return the same bool mask. Mutually exclusive with exit_plan.
+ 
+         Returns:
+             dec_bboxes (torch.Tensor): Decoded bounding boxes.
+             dec_cls (torch.Tensor): Decoded classification scores.
++            last_hidden (torch.Tensor, optional): Eval-layer hidden states, only when return_hidden=True.
++            layer_states (dict, optional): Per-layer states, only when return_layer_states=True.
++            exit_ann (torch.Tensor, optional): (bs, q0) per-query exit annotation, only when an exit probe is
++                active: -1 = ran to the eval layer, i = exited after layer i.
+         """
+         output = embed
+         dec_bboxes = []
+         dec_cls = []
+         last_refined_bbox = None
++        last_hidden = None
++        layer_states = {} if return_layer_states else None
+         refer_bbox = refer_bbox.sigmoid()
++
++        # Eval-only staged query exit (QD-P). Queries flagged after layer i are frozen with their layer-i
++        # (box, logits); later layers run on the surviving subset only, and the final output merges everything
++        # back into the original slot order so postprocess still sees all queries.
++        use_exit = (exit_plan is not None or exit_selector is not None) and not self.training
++        if use_exit and return_layer_states:
++            raise RuntimeError('query-exit probe cannot be combined with return_layer_states')
++        q0 = embed.shape[1]
++        bs = embed.shape[0]
++        bi = torch.arange(bs, device=embed.device).unsqueeze(1)
++        slot_id = torch.arange(q0, device=embed.device).unsqueeze(0).expand(bs, -1)  # original slot ids
++        exited_boxes, exited_cls, exited_slots, exited_layers = [], [], [], []
++        exit_ann = None
++
+         for i, layer in enumerate(self.layers):
++            if inject_at is not None and i in inject_at:
++                embed_add, refer_add = inject_at[i]
++                output = torch.cat([output, embed_add], 1)
++                refer_bbox = torch.cat([refer_bbox, refer_add], 1)
++                if self.training and last_refined_bbox is not None:
++                    # B1a: the training branch re-applies each layer's box delta w.r.t. the PREVIOUS layer's
++                    # refined box (kept un-detached to preserve the gradient chain). Injected queries have no
++                    # previous-layer box; their reference is the injected refer_add (already detached with the
++                    # state). Extend last_refined_bbox so the training append below stays shape-consistent and
++                    # current queries keep their gradient path. Values identical to refined_bbox computation.
++                    last_refined_bbox = torch.cat([last_refined_bbox, refer_add.detach()], 1)
++
+             output = layer(output, refer_bbox, feats, shapes, padding_mask, attn_mask, pos_mlp(refer_bbox))
+ 
+             bbox = bbox_head[i](output)
+             refined_bbox = torch.sigmoid(bbox + inverse_sigmoid(refer_bbox))
++            cls_i = score_head[i](output)
+ 
+             if self.training:
+-                dec_cls.append(score_head[i](output))
++                dec_cls.append(cls_i)
+                 if i == 0:
+                     dec_bboxes.append(refined_bbox)
+                 else:
+                     dec_bboxes.append(torch.sigmoid(bbox + inverse_sigmoid(last_refined_bbox)))
+-            elif i == self.eval_idx:
+-                dec_cls.append(score_head[i](output))
+-                dec_bboxes.append(refined_bbox)
+-                break
++            else:
++                if use_exit and i < self.eval_idx:
++                    mask = exit_plan.get(i) if exit_plan is not None else exit_selector(
++                        i, output, refined_bbox, cls_i, refer_bbox
++                    )
++                    mask = mask.to(torch.bool)
++                    if mask.any():
++                        # cur_pos indexes the CURRENT query positions for tensor gathering; slot_id keeps the
++                        # original slot identity for the final merge. They differ once the first exits happen.
++                        cur_pos = torch.arange(mask.shape[1], device=embed.device).unsqueeze(0).expand(bs, -1)
++                        ex_pos = cur_pos[mask]
++                        ex_id = slot_id[mask]
++                        exited_boxes.append(refined_bbox[bi, ex_pos])
++                        exited_cls.append(cls_i[bi, ex_pos])
++                        exited_slots.append(ex_id)
++                        exited_layers.append(torch.full_like(ex_id, i))
++                        slot_id = torch.stack([slot_id[b][~mask[b]] for b in range(bs)], 0)
++                        keep_pos = torch.stack([cur_pos[b][~mask[b]] for b in range(bs)], 0)
++                        output = output[bi, keep_pos]
++                        refined_bbox = refined_bbox[bi, keep_pos]
++                if i == self.eval_idx:
++                    dec_cls.append(cls_i)
++                    dec_bboxes.append(refined_bbox)
++                    last_hidden = output
++                    if layer_states is not None:
++                        layer_states[i] = (output, refined_bbox, cls_i, refer_bbox)
++                    break
++                elif layer_states is not None:
++                    layer_states[i] = (output, refined_bbox, cls_i, refer_bbox)
+ 
+             last_refined_bbox = refined_bbox
+             refer_bbox = refined_bbox.detach() if self.training else refined_bbox
+ 
++        if self.training:
++            # B1a temporal injection: injected queries change the decoder width relative to the encoder
++            # output, so per-layer outputs can no longer be concatenated with it (and with inject-at-0 all
++            # layers share the injected width, which still differs from the encoder width). Whenever
++            # injection is active, return per-layer lists; the loss consumes lists natively (main loss on
++            # the last layer, auxiliary losses on the rest). The no-injection default path keeps the exact
++            # original stacked-tensor behavior.
++            if inject_at is not None or not all(t.shape == dec_bboxes[0].shape for t in dec_bboxes):
++                if layer_states is not None:
++                    return dec_bboxes, dec_cls, last_hidden, layer_states
++                if return_hidden:
++                    return dec_bboxes, dec_cls, last_hidden
++                return dec_bboxes, dec_cls
++
++        if use_exit:
++            fin_box = torch.zeros(bs, q0, 4, device=embed.device, dtype=refined_bbox.dtype)
++            fin_cls = torch.zeros(bs, q0, cls_i.shape[-1], device=embed.device, dtype=cls_i.dtype)
++            exit_ann = torch.full((bs, q0), -1, device=embed.device, dtype=torch.long)
++            for sl, ly, bx, cx in zip(exited_slots, exited_layers, exited_boxes, exited_cls):
++                fin_box[bi, sl] = bx
++                fin_cls[bi, sl] = cx
++                exit_ann[bi, sl] = ly
++            fin_box[bi, slot_id] = refined_bbox
++            fin_cls[bi, slot_id] = cls_i
++            return fin_box.unsqueeze(0), fin_cls.unsqueeze(0), exit_ann
++
++        if layer_states is not None:
++            return torch.stack(dec_bboxes), torch.stack(dec_cls), last_hidden, layer_states
++        if return_hidden:
++            return torch.stack(dec_bboxes), torch.stack(dec_cls), last_hidden
+         return torch.stack(dec_bboxes), torch.stack(dec_cls)
+diff --git a/ultralytics/nn/tasks.py b/ultralytics/nn/tasks.py
+index 06417bb2d..d5de3cdc9 100644
+--- a/ultralytics/nn/tasks.py
++++ b/ultralytics/nn/tasks.py
+@@ -920,6 +920,22 @@ class RTDETRDetectionModel(DetectionModel):
+ 
+         return RTDETRDetectionLoss(nc=self.nc, use_vfl=True)
+ 
++    def _fpn_features(self, x):
++        """Run all layers except the RTDETRDecoder head and return the head's multi-level inputs.
++
++        Mirrors BaseModel._predict_once's from-index resolution (Concat layers need cached outputs), which a
++        plain nn.Sequential slice cannot handle. Used by the B1a pair-training path to obtain FPN features
++        for both the previous frame (under eval/no_grad) and the current frame (training mode).
++        """
++        head = self.model[-1]
++        y = []
++        for m in self.model[:-1]:
++            if m.f != -1:
++                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]
++            x = m(x)
++            y.append(x)
++        return [x if j == -1 else y[j] for j in head.f]
++
+     def loss(self, batch, preds=None):
+         """Compute the loss for the given batch of data.
+ 
+@@ -947,7 +963,17 @@ class RTDETRDetectionModel(DetectionModel):
+         }
+ 
+         if preds is None:
+-            preds = self.predict(img, batch=targets)
++            if self.training and batch.get('img_prev') is not None:
++                # B1a pair training: extract the previous frame's temporal state in eval mode (batchnorm on
++                # running stats, matching deployment), then run the current frame forward with injection.
++                head = self.model[-1]
++                self.eval()
++                with torch.no_grad():
++                    state = head.extract_pair_state(self._fpn_features(batch['img_prev']))
++                self.train()
++                preds = head.forward_train_pair(self._fpn_features(img), targets, state)
++            else:
++                preds = self.predict(img, batch=targets)
+         dec_bboxes, dec_scores, enc_bboxes, enc_scores, dn_meta = preds if self.training else preds[1]
+         if dn_meta is None:
+             dn_bboxes, dn_scores = None, None
+@@ -955,8 +981,14 @@ class RTDETRDetectionModel(DetectionModel):
+             dn_bboxes, dec_bboxes = torch.split(dec_bboxes, dn_meta["dn_num_split"], dim=2)
+             dn_scores, dec_scores = torch.split(dec_scores, dn_meta["dn_num_split"], dim=2)
+ 
+-        dec_bboxes = torch.cat([enc_bboxes.unsqueeze(0), dec_bboxes])  # (7, bs, 300, 4)
+-        dec_scores = torch.cat([enc_scores.unsqueeze(0), dec_scores])
++        if isinstance(dec_bboxes, list):
++            # B1a temporal injection: per-layer query counts differ, encoder output joins as a list element;
++            # the criterion consumes lists natively (main loss on the last layer, aux on the rest).
++            dec_bboxes = [enc_bboxes, *dec_bboxes]
++            dec_scores = [enc_scores, *dec_scores]
++        else:
++            dec_bboxes = torch.cat([enc_bboxes.unsqueeze(0), dec_bboxes])  # (7, bs, 300, 4)
++            dec_scores = torch.cat([enc_scores.unsqueeze(0), dec_scores])
+ 
+         loss = self.criterion(
+             (dec_bboxes, dec_scores), targets, dn_bboxes=dn_bboxes, dn_scores=dn_scores, dn_meta=dn_meta

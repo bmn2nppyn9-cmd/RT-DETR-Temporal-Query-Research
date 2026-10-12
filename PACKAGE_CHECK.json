@@ -1,0 +1,10 @@
+{
+  "copied_files": 107,
+  "python_ast_checked": 62,
+  "copy_sha256_verified": true,
+  "core_snapshots_match_research_commit_ignoring_crlf": true,
+  "patch_applies_to_base_index": true,
+  "base_commit": "5a64e9e65b5cf66876c8bdce44345b6b279f5ee3",
+  "research_commit": "943bb3efc91b89c8e5105543c31af7d19792600a",
+  "training_or_gpu_tests_run": false
+}

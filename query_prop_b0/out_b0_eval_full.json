@@ -1,0 +1,100 @@
+{
+  "b0a0.5": {
+    "ap": {
+      "map50": 0.3327675079436375,
+      "map": 0.20202172440998947,
+      "ap75": 0.20326650705261126,
+      "per_class_ap50": {
+        "person": 0.3460982804705318,
+        "bicycle": 0.03660137409085439,
+        "car": 0.5966573656035905,
+        "motorcycle": 0.25592262148495926,
+        "bus": 0.29795881963234644,
+        "truck": 0.3680363253446063,
+        "traffic_light": 0.40839799243983416,
+        "stop_sign": 0.35246728448237713
+      },
+      "per_class_ap": {
+        "person": 0.15598810756912573,
+        "bicycle": 0.012162051511800411,
+        "car": 0.4017409937872558,
+        "motorcycle": 0.12178022258911698,
+        "bus": 0.20591749705209886,
+        "truck": 0.2674667290328504,
+        "traffic_light": 0.25375662015458395,
+        "stop_sign": 0.19736157358308332
+      }
+    },
+    "latency": {
+      "median": 18.400700569152832,
+      "p95": 21.62417573928833,
+      "mean": 18.777467782556606
+    },
+    "sap_L0": {
+      "sap50": 0.30609388724420916,
+      "sap": 0.1833515196275816,
+      "aps": [
+        0.30609388724420916,
+        0.2923080985835882,
+        0.2736011720612289,
+        0.24928846727903914,
+        0.21893308375399895,
+        0.18364263487668547,
+        0.14415371315974326,
+        0.09920330427217056,
+        0.051899088593324025,
+        0.014391746451828183
+      ],
+      "n_proc": 14311,
+      "drop_pct": 4.986057628468998
+    },
+    "n_frames": 15062,
+    "temporal_diag": {
+      "temporal_per_frame_mean": 111.06579471517726,
+      "temporal_per_frame_median": 118.0,
+      "temporal_conf_mean": 0.17259634033523633,
+      "temporal_conf_median": 0.16017624735832214,
+      "tp_temporal_total": 63888,
+      "tp_current_total": 134885,
+      "independent_tp_total": 5766,
+      "independent_tp_share_of_all_tp": 0.02900796385827049,
+      "per_class_independent_tp": {
+        "person": 960,
+        "bicycle": 9,
+        "car": 3349,
+        "motorcycle": 30,
+        "bus": 371,
+        "truck": 670,
+        "traffic_light": 345,
+        "stop_sign": 32
+      },
+      "per_class_tp_temporal": {
+        "person": 6698,
+        "bicycle": 72,
+        "car": 40455,
+        "motorcycle": 201,
+        "bus": 1424,
+        "truck": 4733,
+        "traffic_light": 9716,
+        "stop_sign": 589
+      },
+      "overlap_iou_mean": 0.7402533399264226,
+      "overlap_frac_iou_ge_0.5": 0.8873004705079226,
+      "first_frame": {
+        "n_frames": 21,
+        "temporal_per_frame_mean": 0.0,
+        "independent_tp": 0
+      },
+      "later_frames": {
+        "n_frames": 15041,
+        "temporal_per_frame_mean": 111.22086297453627,
+        "independent_tp": 5766
+      }
+    },
+    "nq_dec_counts": {
+      "300": 20,
+      "375": 15042
+    }
+  },
+  "_compare": {}
+}

@@ -1,0 +1,93 @@
+{
+  "suffix": "e3",
+  "records": "records_e3",
+  "rows": {
+    "b1a0": {
+      "AP50": 0.387680319545881,
+      "AP": 0.22856967569010367,
+      "AP75": 0.22652257359757497,
+      "AP_small": 0.09208711028919475,
+      "AR100": 0.3736094152681887,
+      "current_only_map50": 0.387680319545881,
+      "temporal_only_map50": 0.0,
+      "keep95": 1.0,
+      "new_gt_temporal": null,
+      "a0_gt_lost": null
+    },
+    "b1ac25": {
+      "AP50": 0.38822746188720647,
+      "AP": 0.22795074698993817,
+      "AP75": 0.2257229232879317,
+      "AP_small": 0.09097164325781339,
+      "AR100": 0.3732220565180818,
+      "current_only_map50": 0.38822746188720647,
+      "temporal_only_map50": 0.0,
+      "keep95": 0.2295632101342375,
+      "new_gt_temporal": null,
+      "a0_gt_lost": null
+    },
+    "b1at31": {
+      "AP50": 0.4037885170319606,
+      "AP": 0.24184713275602637,
+      "AP75": 0.24031129025837072,
+      "AP_small": 0.09829161943689038,
+      "AR100": 0.3854646889014189,
+      "current_only_map50": 0.4050754692818135,
+      "temporal_only_map50": 0.039225220733960536,
+      "keep95": 0.0633254307962632,
+      "new_gt_temporal": null,
+      "a0_gt_lost": null
+    },
+    "b1at23": {
+      "AP50": 0.4013205600817642,
+      "AP": 0.2383958258656799,
+      "AP75": 0.2362715056437475,
+      "AP_small": 0.09630571370521335,
+      "AR100": 0.3780034247073534,
+      "current_only_map50": 0.40215937395311685,
+      "temporal_only_map50": 0.0775532089302514,
+      "keep95": 0.06257700043925386,
+      "new_gt_temporal": null,
+      "a0_gt_lost": null
+    },
+    "b1at33": {
+      "AP50": 0.4045257521639096,
+      "AP": 0.2421811373589068,
+      "AP75": 0.2437913168369047,
+      "AP_small": 0.09703370865663102,
+      "AR100": 0.38511859826778805,
+      "current_only_map50": 0.40524058107431915,
+      "temporal_only_map50": 0.07737784181706994,
+      "keep95": 0.06503666083841123,
+      "new_gt_temporal": null,
+      "a0_gt_lost": null
+    }
+  },
+  "checks": [
+    {
+      "name": "late injection 相对 B1a-0: mAP50 +0.5pp 或 AP +0.3pp",
+      "pass": true,
+      "detail": "b1at33: AP50 +0.0168, AP +0.0136"
+    },
+    {
+      "name": "优于等 query 数 current control",
+      "pass": true,
+      "detail": "b1at33 0.4045 vs b1ac25 0.3882"
+    },
+    {
+      "name": "current-only 相对 B1a-0 下降 ≤0.3pp",
+      "pass": true,
+      "detail": "降 -0.0176"
+    },
+    {
+      "name": "T23/T33 至少一个优于 T31",
+      "pass": true,
+      "detail": "b1at33 0.4045 vs b1at31 0.4038"
+    }
+  ],
+  "verdict": "Go",
+  "anchor": {
+    "A0_frozen": 0.38864,
+    "U0_frozen": 0.4074
+  }
+}

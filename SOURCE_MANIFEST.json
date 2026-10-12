@@ -1,0 +1,648 @@
+{
+  "source_root": "D:\\lunwen\\自研",
+  "upstream_root": "C:\\Users\\TONY\\ultralytics",
+  "files": [
+    {
+      "path": "build_stream_index.py",
+      "source": "D:\\lunwen\\自研\\build_stream_index.py",
+      "bytes": 12718,
+      "sha256": "93a4a6f58318b6d05381da4ae6e55a4ac064a2bcd0e910ef4e8bf8f62253201d"
+    },
+    {
+      "path": "build_yolo_dataset.py",
+      "source": "D:\\lunwen\\自研\\build_yolo_dataset.py",
+      "bytes": 7758,
+      "sha256": "547366160bc50431964fb4876ec2c169038ed4a23db3cc23f6ed9bc5465ec1cb"
+    },
+    {
+      "path": "make_train_subset.py",
+      "source": "D:\\lunwen\\自研\\make_train_subset.py",
+      "bytes": 7319,
+      "sha256": "aeaffa98dd2a82b55cdfd9c0860ac0ec30bdb4d1c40c6017aefa320df4af4fc9"
+    },
+    {
+      "path": "make_smoke_subset.py",
+      "source": "D:\\lunwen\\自研\\make_smoke_subset.py",
+      "bytes": 3401,
+      "sha256": "1c1c52067dcd6dba74781add189dda2303b553cc05399f32f4cceb98c212ff0c"
+    },
+    {
+      "path": "prepare_argoverse.py",
+      "source": "D:\\lunwen\\自研\\prepare_argoverse.py",
+      "bytes": 7728,
+      "sha256": "6d4aa583b26de4ad7ed34f7a3135c92838bbea169ce825a5c9417b9fa0b16738"
+    },
+    {
+      "path": "record_stream_predictions.py",
+      "source": "D:\\lunwen\\自研\\record_stream_predictions.py",
+      "bytes": 7519,
+      "sha256": "b078b8e8fd5aa482cea579da7b5c272f82782cff9e68d7059bfeaaa11e60f1f4"
+    },
+    {
+      "path": "eval_full_metrics.py",
+      "source": "D:\\lunwen\\自研\\eval_full_metrics.py",
+      "bytes": 14048,
+      "sha256": "fb0098cefda134cbdf8f381f0b1493884efa137c0344b58960c79a387e184661"
+    },
+    {
+      "path": "eval_sap.py",
+      "source": "D:\\lunwen\\自研\\eval_sap.py",
+      "bytes": 14063,
+      "sha256": "93dd763fd88e45b6ba17a25970092867f15853e90dc35f6737e4a4c758046f2c"
+    },
+    {
+      "path": "verify_ap_vs_pycoco.py",
+      "source": "D:\\lunwen\\自研\\verify_ap_vs_pycoco.py",
+      "bytes": 5947,
+      "sha256": "a6f58b704fc0513f271e650b123f4e7e45ed063af9ece12f5ab91b0109eaf9de"
+    },
+    {
+      "path": "profile_rtdetr.py",
+      "source": "D:\\lunwen\\自研\\profile_rtdetr.py",
+      "bytes": 8537,
+      "sha256": "50a148543b21db2e1ca2e8f5b56592203657a291ccaf82de924d5aad98c5a352"
+    },
+    {
+      "path": "verify_depth_timing.py",
+      "source": "D:\\lunwen\\自研\\verify_depth_timing.py",
+      "bytes": 7128,
+      "sha256": "08cf29ebf5d7da17f363771c72d057dd5820098e09714be3b32c832ea7256202"
+    },
+    {
+      "path": "verify_query_timing.py",
+      "source": "D:\\lunwen\\自研\\verify_query_timing.py",
+      "bytes": 5174,
+      "sha256": "a1cbb9cc29ca7a11db97b2e1b7631d870a36095984ddf2a5fce49701da1e3221"
+    },
+    {
+      "path": "eval_depth_sweep.py",
+      "source": "D:\\lunwen\\自研\\eval_depth_sweep.py",
+      "bytes": 3954,
+      "sha256": "b5cbb1cbe120a738536c1399801efcdce7b9e4952bdbbd16f4cf277b3517a4c2"
+    },
+    {
+      "path": "eval_query_sweep.py",
+      "source": "D:\\lunwen\\自研\\eval_query_sweep.py",
+      "bytes": 6746,
+      "sha256": "f31d9870a1b71683a8d08a716cd8b27ae2fccd130da9f11e98fa5003735e6449"
+    },
+    {
+      "path": "bench_keyframe.py",
+      "source": "D:\\lunwen\\自研\\bench_keyframe.py",
+      "bytes": 8416,
+      "sha256": "1cd226f44b8cd2d19b6f0f1e9da964179c96e3ba13fc52977234a94e67452978"
+    },
+    {
+      "path": "bench_stages.py",
+      "source": "D:\\lunwen\\自研\\bench_stages.py",
+      "bytes": 15734,
+      "sha256": "e80e22b5fe4321a07c3d1c710396dfb4e85a031b6727bc09d6bba55b2d7bffa4"
+    },
+    {
+      "path": "oracle_analysis.py",
+      "source": "D:\\lunwen\\自研\\oracle_analysis.py",
+      "bytes": 12022,
+      "sha256": "4d8f43f76cead8cb60083d33759f40da4ca1dee3737358a29601f197c889ef24"
+    },
+    {
+      "path": "exp_ab_adaptive_depth.py",
+      "source": "D:\\lunwen\\自研\\exp_ab_adaptive_depth.py",
+      "bytes": 33462,
+      "sha256": "77ca7b3e7d89aa98049c496609f831fdc6ba05f2d8daa391a02ebeca516460c2"
+    },
+    {
+      "path": "offline_query_propagation.py",
+      "source": "D:\\lunwen\\自研\\offline_query_propagation.py",
+      "bytes": 11143,
+      "sha256": "238ce9ef6b4712eab5bc596514713d68f6710e31cde495c360496c4f19330d7d"
+    },
+    {
+      "path": "probe_propagation.py",
+      "source": "D:\\lunwen\\自研\\probe_propagation.py",
+      "bytes": 11085,
+      "sha256": "782d880c29a47fdf4fd52c8b600035017f4eafeddcb336e9524688eee68cca14"
+    },
+    {
+      "path": "probe_encoder_recall.py",
+      "source": "D:\\lunwen\\自研\\probe_encoder_recall.py",
+      "bytes": 8394,
+      "sha256": "31fad25384fccdb204a149b65ad1929f5135919b2219b1cbbf4fbbbec7159b1f"
+    },
+    {
+      "path": "probe_dedup_compare.py",
+      "source": "D:\\lunwen\\自研\\probe_dedup_compare.py",
+      "bytes": 3249,
+      "sha256": "64b20c2dd65986e95ac91634361d211e210991d23dddd31d9e8bd427b1515628"
+    },
+    {
+      "path": "gt_area_stats.py",
+      "source": "D:\\lunwen\\自研\\gt_area_stats.py",
+      "bytes": 4289,
+      "sha256": "fed00988efabc18fa664df77442e660feb501576a58d5c08bda4698a76acbf2d"
+    },
+    {
+      "path": "test_propagation_coverage.py",
+      "source": "D:\\lunwen\\自研\\test_propagation_coverage.py",
+      "bytes": 14392,
+      "sha256": "86262bbc534f8ee0182a87ca475903fdcc2eab1f65c9ff8a3b1bd74dea405e3b"
+    },
+    {
+      "path": "plot_depth_tradeoff.py",
+      "source": "D:\\lunwen\\自研\\plot_depth_tradeoff.py",
+      "bytes": 3974,
+      "sha256": "de3aff5ad7333d0bc81b4693ee6d72e315aa630b0279e0e9d1b2df61f9d809c4"
+    },
+    {
+      "path": "plot_profile.py",
+      "source": "D:\\lunwen\\自研\\plot_profile.py",
+      "bytes": 8897,
+      "sha256": "ff8a85d50730dd5fb2b419c8252e630e8c20baac1044dee37e059bf661a7b24a"
+    },
+    {
+      "path": "plot_sap.py",
+      "source": "D:\\lunwen\\自研\\plot_sap.py",
+      "bytes": 3100,
+      "sha256": "cda1676ad34bec00c9e4737e75c54546cf0257fc1717163a01a999153bb8b233"
+    },
+    {
+      "path": "plot_amortized.py",
+      "source": "D:\\lunwen\\自研\\plot_amortized.py",
+      "bytes": 3979,
+      "sha256": "95df22fbada41ff5047c120a8081f780b0e0bbcfa9432b5fb8584ee188edcea7"
+    },
+    {
+      "path": "plot_bench.py",
+      "source": "D:\\lunwen\\自研\\plot_bench.py",
+      "bytes": 10564,
+      "sha256": "de4ba4eccf065a205f5bd82c2f06993f1dca522b3091fb13c3484ef202f09877"
+    },
+    {
+      "path": "b1a_pair/dataset_b1a.py",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\dataset_b1a.py",
+      "bytes": 3852,
+      "sha256": "267c23cbe76800b057dccae01c99ef4cb3954b9119e61e265fd81f128eb756c2"
+    },
+    {
+      "path": "b1a_pair/diag_b1a0.py",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\diag_b1a0.py",
+      "bytes": 4665,
+      "sha256": "18dc0454eb3446a8c4caabd56b308dc05002373875e782458144fb36f105b4a8"
+    },
+    {
+      "path": "b1a_pair/eval_b1a.py",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\eval_b1a.py",
+      "bytes": 6664,
+      "sha256": "c84e43af16eeeddfb9d9ad6388e83b040417213963f375c77b06c84e8c81e1a6"
+    },
+    {
+      "path": "b1a_pair/make_pair_subset.py",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\make_pair_subset.py",
+      "bytes": 5779,
+      "sha256": "2e59d5718f46a957063477fcdd0780de8b8fe5ee1ec807e5784e099356cee3e9"
+    },
+    {
+      "path": "b1a_pair/record_b1a.py",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\record_b1a.py",
+      "bytes": 8675,
+      "sha256": "45e352c9abf282b2647cd2cddca5316e53d4a4a8b454f67befa2aedecf89c177"
+    },
+    {
+      "path": "b1a_pair/test_b1a_regression.py",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\test_b1a_regression.py",
+      "bytes": 10911,
+      "sha256": "3880e38e4074d2b6fe1fbe307686b2161847d1e5aa3299dcff3adf1ccee9be51"
+    },
+    {
+      "path": "b1a_pair/train_b1a.py",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\train_b1a.py",
+      "bytes": 5955,
+      "sha256": "fe671b34e956bb03c773403fe23bfd33b9cff4463affd8e0ef4d53e22c7627bf"
+    },
+    {
+      "path": "query_prop_b0/bench_b0.py",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\bench_b0.py",
+      "bytes": 4599,
+      "sha256": "f45f77ed4122c8d77f1b45aeb0555835f6d540dbc029a5661ad6d57ea12f61d1"
+    },
+    {
+      "path": "query_prop_b0/bench_b0_interleaved.py",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\bench_b0_interleaved.py",
+      "bytes": 3677,
+      "sha256": "e8358d2c011d3988373c09889bd6e342582c997ec817daa17ed402715804a17e"
+    },
+    {
+      "path": "query_prop_b0/diag_b0_posthoc.py",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\diag_b0_posthoc.py",
+      "bytes": 8267,
+      "sha256": "908afbeccf5cf447988cbdf8f8d53166e7f2393dc376fbc8e795e50a9c069d6e"
+    },
+    {
+      "path": "query_prop_b0/dump_a0_raw.py",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\dump_a0_raw.py",
+      "bytes": 1967,
+      "sha256": "5d5657335650ddbc8a9342017c601b6133fb59c241e8651b6cb3d806882efcda"
+    },
+    {
+      "path": "query_prop_b0/eval_b0.py",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\eval_b0.py",
+      "bytes": 12287,
+      "sha256": "314025dfb627f741a4bcf288e62777bb56c9c7baf195394a8afe7630b0a6058a"
+    },
+    {
+      "path": "query_prop_b0/record_b0.py",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\record_b0.py",
+      "bytes": 8632,
+      "sha256": "002eadf0d3e468e8e6979d39c35a6cf998271594335c6e94ef727a2b113bc277"
+    },
+    {
+      "path": "query_prop_b0/test_b0_regression.py",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\test_b0_regression.py",
+      "bytes": 11570,
+      "sha256": "6380c060adc4f727c44c5ef00ebf75a67ebcc1d9ce96375e5623681db339affb"
+    },
+    {
+      "path": "query_depth_probe/analyze_qd_o.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\analyze_qd_o.py",
+      "bytes": 18610,
+      "sha256": "775550c3738369e41fe7237bd023767b2eceb5d738e268b72a6e1a00c4efdc93"
+    },
+    {
+      "path": "query_depth_probe/bench_qd_t.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\bench_qd_t.py",
+      "bytes": 6255,
+      "sha256": "76f8c3a48f206c331232d8312df7a39deb3808e7fe211c288b33f8eb422e1933"
+    },
+    {
+      "path": "query_depth_probe/eval_qd_p.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\eval_qd_p.py",
+      "bytes": 6976,
+      "sha256": "0c18cd43229d43ca9d4ced8a5305578b50e9189fbbb998437e36ea38fb3df192"
+    },
+    {
+      "path": "query_depth_probe/eval_qd_t.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\eval_qd_t.py",
+      "bytes": 10903,
+      "sha256": "416db923d528d242648e3f1c5f217e21d95ff2a8485f6b3a46417238997ed456"
+    },
+    {
+      "path": "query_depth_probe/make_qd_o_report.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\make_qd_o_report.py",
+      "bytes": 8488,
+      "sha256": "f6c2bdf023738863256032630075bfc293766e5a7fdfd079eb4326a733f64acf"
+    },
+    {
+      "path": "query_depth_probe/make_qd_p_report.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\make_qd_p_report.py",
+      "bytes": 5842,
+      "sha256": "2a24fca8fdb29c4653af2b6fcfa01821984d87414bc03c3893e3b0fce5c82363"
+    },
+    {
+      "path": "query_depth_probe/make_qd_t_report.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\make_qd_t_report.py",
+      "bytes": 10079,
+      "sha256": "c79dac9e7ad2395b2dcb625d7deb2b3fdd8a26f22ecbb92a3a6ad80667e03ec2"
+    },
+    {
+      "path": "query_depth_probe/record_qd_o.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\record_qd_o.py",
+      "bytes": 7861,
+      "sha256": "36b67caebf8d70ab52d01d4afceeb7a116ea1e64431171e8a774d318623f1c0d"
+    },
+    {
+      "path": "query_depth_probe/record_qd_p.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\record_qd_p.py",
+      "bytes": 15245,
+      "sha256": "f1b1eefc43113951576811cc038cccf99fb28c6346e2397accd512bc01eb09c9"
+    },
+    {
+      "path": "query_depth_probe/record_qd_t.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\record_qd_t.py",
+      "bytes": 10820,
+      "sha256": "24479c52f676cfc0f0bc2c8dc097ae92652417e2c9a29f1f5d01294af7dd3716"
+    },
+    {
+      "path": "query_depth_probe/test_qd_regression.py",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\test_qd_regression.py",
+      "bytes": 21560,
+      "sha256": "9a384c7b9dc946d6f71f03d109db062c0d2ee591feb788b3f68247afbd420857"
+    },
+    {
+      "path": "ablation_2d/eval_grid_2d.py",
+      "source": "D:\\lunwen\\自研\\ablation_2d\\eval_grid_2d.py",
+      "bytes": 8674,
+      "sha256": "8b887a78b335d7b7173aa89f3eb3fb6f98ec538dda0321ed03ede67d77fcf9d8"
+    },
+    {
+      "path": "ablation_2d/plot_grid.py",
+      "source": "D:\\lunwen\\自研\\ablation_2d\\plot_grid.py",
+      "bytes": 8950,
+      "sha256": "edbb16716c7640c78312a06aa9a8b20fa68297a2a99b5399351197f07546e2eb"
+    },
+    {
+      "path": "ablation_3d/eval_grid_3d.py",
+      "source": "D:\\lunwen\\自研\\ablation_3d\\eval_grid_3d.py",
+      "bytes": 13137,
+      "sha256": "4c61fd135c40a062f7674c925b0603a96a6d43d00c217a715de03f2508a6bf9e"
+    },
+    {
+      "path": "ablation_3d/merge_3d.py",
+      "source": "D:\\lunwen\\自研\\ablation_3d\\merge_3d.py",
+      "bytes": 1541,
+      "sha256": "e89849a03d7dcb1516710b0adfad23928bdc64337b73fff25e35639bff0bef29"
+    },
+    {
+      "path": "cfg/argoverse-hd-local.yaml",
+      "source": "D:\\lunwen\\自研\\cfg\\argoverse-hd-local.yaml",
+      "bytes": 871,
+      "sha256": "4fbe04f147eb65ae07d8cc917b96ed0288da315c675a33c21aa4486a1bfd7f3c"
+    },
+    {
+      "path": "cfg/rtdetr-resnet18.yaml",
+      "source": "D:\\lunwen\\自研\\cfg\\rtdetr-resnet18.yaml",
+      "bytes": 1737,
+      "sha256": "63eb18c1e38d7a6202639226a3ab2226f587e77cef7b130fcccb3a76f1f269ee"
+    },
+    {
+      "path": "b1a_pair/b1a_pair.yaml",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\b1a_pair.yaml",
+      "bytes": 305,
+      "sha256": "2d9f5f52b77acde16f46f50c579ad3da48a7243d81a24f17f370c6bd3400b887"
+    },
+    {
+      "path": "b1a_pair/b1a_single.yaml",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\b1a_single.yaml",
+      "bytes": 303,
+      "sha256": "ff9ab97ad1630406d9aa2c5bc80b8f9bc70aafc89e8b3eaf88cf3a4005ed541b"
+    },
+    {
+      "path": "b1a_pair/b1a_checkpoints_e1_sha256.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\b1a_checkpoints_e1_sha256.json",
+      "bytes": 1049,
+      "sha256": "6f3b772dc12a659194f147835403337df1fd21cff6e2bcdf36c03bd73d54a7e4"
+    },
+    {
+      "path": "b1a_pair/b1a_checkpoints_e3_sha256.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\b1a_checkpoints_e3_sha256.json",
+      "bytes": 1049,
+      "sha256": "8f0f52c89eee08cdec8ef480622f99c92f4562bfb67c00c8386aa8758f1a3e8c"
+    },
+    {
+      "path": "b1a_pair/b1a_decision_e1.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\b1a_decision_e1.json",
+      "bytes": 2704,
+      "sha256": "beb854ebd16dbbe3d042dd531f491eaa1cc52d79d21532bb9ca37198d34fd315"
+    },
+    {
+      "path": "b1a_pair/b1a_decision_e3.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\b1a_decision_e3.json",
+      "bytes": 2701,
+      "sha256": "371883e6d1db920d7671f756e37db4917803d240088743da3df66dc20e585ca8"
+    },
+    {
+      "path": "b1a_pair/b1a_main_e3_results.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\b1a_main_e3_results.json",
+      "bytes": 3151,
+      "sha256": "b837a4104a6c4be1707164fda7efaf54370a2c71fec2e553189e3af60ffe4fde"
+    },
+    {
+      "path": "b1a_pair/b1a_smoke_e1_results.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\b1a_smoke_e1_results.json",
+      "bytes": 2591,
+      "sha256": "77bf1c6e5d37588255964a7b825680f62e0fa7973818e56e4391241906eb4b80"
+    },
+    {
+      "path": "b1a_pair/out_full_metrics_b1a_e1.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\out_full_metrics_b1a_e1.json",
+      "bytes": 22779,
+      "sha256": "2b4afcce7a05011917ec48f6fda42d2c20f761704427865d99691f8dc347b914"
+    },
+    {
+      "path": "b1a_pair/out_full_metrics_b1a_e3.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\out_full_metrics_b1a_e3.json",
+      "bytes": 22785,
+      "sha256": "bec99601188cfd9d85341a42fe20d84fdbe030b30074264f536e003142d86aec"
+    },
+    {
+      "path": "b1a_pair/pair_subset_stats.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\pair_subset_stats.json",
+      "bytes": 534,
+      "sha256": "2706d77b804c5bedb47e974dc9c930619ab5c34afe19a79cf503d8885d6c4a2f"
+    },
+    {
+      "path": "b1a_pair/temporal_b1a_e1.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\temporal_b1a_e1.json",
+      "bytes": 19902,
+      "sha256": "a5a883c8791fbc03aaaf51671c34452adaf9c6ecb79357a38eb6a37b0d900797"
+    },
+    {
+      "path": "b1a_pair/temporal_b1a_e3.json",
+      "source": "D:\\lunwen\\自研\\b1a_pair\\temporal_b1a_e3.json",
+      "bytes": 19877,
+      "sha256": "35b2b0b6b3f266523dc1b25eb726318755f4f84657f718862faf2c55b1c0519a"
+    },
+    {
+      "path": "query_prop_b0/out_b0_eval.json",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\out_b0_eval.json",
+      "bytes": 7906,
+      "sha256": "f074a77ace924774da64cac6de34ddea4db23ebce317dc93afd3be4eb83b8013"
+    },
+    {
+      "path": "query_prop_b0/out_b0_eval_full.json",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\out_b0_eval_full.json",
+      "bytes": 2868,
+      "sha256": "c1d18b4c538dc9ddac5d27c4a43d5d523a91c9dbbeeee2996f7cf70bdd575af0"
+    },
+    {
+      "path": "query_prop_b0/out_b0_eval_smoke.json",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\out_b0_eval_smoke.json",
+      "bytes": 7703,
+      "sha256": "c4ef07d65c15ed9b0d5a7a6ea03a0d99e248a38d91966cec9f4e0f17f8440214"
+    },
+    {
+      "path": "query_prop_b0/out_b0_posthoc_full.json",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\out_b0_posthoc_full.json",
+      "bytes": 1873,
+      "sha256": "a7ca6aaf1c746d6de98717eafc21b7523547b18a5cb4613c168c6bc0350f09ae"
+    },
+    {
+      "path": "query_prop_b0/out_b0_posthoc_smoke.json",
+      "source": "D:\\lunwen\\自研\\query_prop_b0\\out_b0_posthoc_smoke.json",
+      "bytes": 1862,
+      "sha256": "2cf8f916391dd7bc49651d3de2b998922b7830d84e3b7036d4d201f3d4856d7f"
+    },
+    {
+      "path": "query_depth_probe/qd_oracle.json",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\qd_oracle.json",
+      "bytes": 15412,
+      "sha256": "a5bfc57735b5c980950121478acba46a12f630a356f4aa089a677cb015bcae96"
+    },
+    {
+      "path": "query_depth_probe/qd_oracle_smoke.json",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\qd_oracle_smoke.json",
+      "bytes": 14621,
+      "sha256": "d93bbbe36f75f3e64b5ea8df1a290a144f9d780403988b89cd7f00264acd320d"
+    },
+    {
+      "path": "query_depth_probe/query_depth_schedule_smoke.json",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\query_depth_schedule_smoke.json",
+      "bytes": 26223,
+      "sha256": "c3c4478590a1738ad9d19d4633510aa72c387b15f3bf16e51641cef9c5562415"
+    },
+    {
+      "path": "query_depth_probe/temporal_depth.json",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\temporal_depth.json",
+      "bytes": 17311,
+      "sha256": "421bee7b0baeb56441a6e6d9d845f9820100b088d431a6544a81534b22831a4d"
+    },
+    {
+      "path": "query_depth_probe/temporal_depth_smoke.json",
+      "source": "D:\\lunwen\\自研\\query_depth_probe\\temporal_depth_smoke.json",
+      "bytes": 44755,
+      "sha256": "0ac9f7ad9ca824399b3ea97d72364ac63b889bfc755b2779086eeba3d7ef3f40"
+    },
+    {
+      "path": "ablation_2d/out_grid_2d.json",
+      "source": "D:\\lunwen\\自研\\ablation_2d\\out_grid_2d.json",
+      "bytes": 17708,
+      "sha256": "f415ed83c457ca4d53edaaf6ea867b2f4a2886ae847ecf5bb93a9266f0f12bf9"
+    },
+    {
+      "path": "ablation_3d/timing_3d.json",
+      "source": "D:\\lunwen\\自研\\ablation_3d\\timing_3d.json",
+      "bytes": 7965,
+      "sha256": "b97166af99cd66146b3e8fc5eb64544fdd607978c987c3a6f2b126f845a5e632"
+    },
+    {
+      "path": "out_depth_timing.json",
+      "source": "D:\\lunwen\\自研\\out_depth_timing.json",
+      "bytes": 1418,
+      "sha256": "5286cff98b9dde627e0a8adab659a3131ce70febd550cdd5daeeacd9427eb14b"
+    },
+    {
+      "path": "out_depth_sweep_final.json",
+      "source": "D:\\lunwen\\自研\\out_depth_sweep_final.json",
+      "bytes": 710,
+      "sha256": "825ae1727ad0382a894a02ac135943250c63f4196d0ee036ecc9801089585442"
+    },
+    {
+      "path": "out_query_sweep_full.json",
+      "source": "D:\\lunwen\\自研\\out_query_sweep_full.json",
+      "bytes": 1638,
+      "sha256": "11c35d17ccdf58227b029ce75b3f2a14cf258429eb3a53d8074866984dd5251d"
+    },
+    {
+      "path": "out_full_metrics.json",
+      "source": "D:\\lunwen\\自研\\out_full_metrics.json",
+      "bytes": 13679,
+      "sha256": "6cf6dfb3c3a9f14a2a213b6cd38e37c40148e7a876c8cd3431aac276698aa4a2"
+    },
+    {
+      "path": "out_sap_verify.json",
+      "source": "D:\\lunwen\\自研\\out_sap_verify.json",
+      "bytes": 1684,
+      "sha256": "78913d4f8f55b5e4016db222a8943619f8b298ffb758083cdc5fbdae209ae90d"
+    },
+    {
+      "path": "out_sap_sweep.json",
+      "source": "D:\\lunwen\\自研\\out_sap_sweep.json",
+      "bytes": 14586,
+      "sha256": "1fcb427bafaf3aa7e33d8197898103b3076e920c5792833198609be122f375be"
+    },
+    {
+      "path": "out_gt_area_stats.json",
+      "source": "D:\\lunwen\\自研\\out_gt_area_stats.json",
+      "bytes": 4886,
+      "sha256": "ccb20607ae6685714734c7058d9006f98b16a5307f52b91cba83f3385784c477"
+    },
+    {
+      "path": "out_oracle.json",
+      "source": "D:\\lunwen\\自研\\out_oracle.json",
+      "bytes": 3771,
+      "sha256": "b0d45a897067532596f957bd953107009f638947a57b5d597f6aaebf6c314018"
+    },
+    {
+      "path": "out_offline_query_prop.json",
+      "source": "D:\\lunwen\\自研\\out_offline_query_prop.json",
+      "bytes": 17007,
+      "sha256": "49f64e3b51ea43ae90723916741f2fe1d2d74bf97cabf1c694fed65a4c1ed6e6"
+    },
+    {
+      "path": "out_probe_prop.json",
+      "source": "D:\\lunwen\\自研\\out_probe_prop.json",
+      "bytes": 1053,
+      "sha256": "63d53a3ba21d659574483d506cd4551bacbdebb81ae75decb3240d1aa9f8b0ed"
+    },
+    {
+      "path": "out_probe_prop_d3.json",
+      "source": "D:\\lunwen\\自研\\out_probe_prop_d3.json",
+      "bytes": 634,
+      "sha256": "21d054f37059b328d0a13872b580311a138f4cdb9ed78a96236d5c2a1fd03752"
+    },
+    {
+      "path": "out_probe_encoder.json",
+      "source": "D:\\lunwen\\自研\\out_probe_encoder.json",
+      "bytes": 671,
+      "sha256": "2551002f15827bc5e378dfe2270a24ea73a05326785be351dbdba7c0024f6ea4"
+    },
+    {
+      "path": "ablation_2d/ablation_2d_results.csv",
+      "source": "D:\\lunwen\\自研\\ablation_2d\\ablation_2d_results.csv",
+      "bytes": 3018,
+      "sha256": "5c4701ad03bdd29bc7ddf26ca6d8823995425d6f68e8b6862c783a2ac7d730c5"
+    },
+    {
+      "path": "ablation_2d/figA_pareto_frontier.png",
+      "source": "D:\\lunwen\\自研\\ablation_2d\\figA_pareto_frontier.png",
+      "bytes": 198895,
+      "sha256": "3c2ea60ef6fb75a635ffa1b0763ff210660c412bc6c50f66cbc6b6e8c456b945"
+    },
+    {
+      "path": "ablation_2d/figB_depth_vs_map.png",
+      "source": "D:\\lunwen\\自研\\ablation_2d\\figB_depth_vs_map.png",
+      "bytes": 209483,
+      "sha256": "538dd35c843eaed42320b589e8b8d2ce7d991b295c72d6c7263779fa7720ca9a"
+    },
+    {
+      "path": "ablation_2d/figC_query_vs_map.png",
+      "source": "D:\\lunwen\\自研\\ablation_2d\\figC_query_vs_map.png",
+      "bytes": 169136,
+      "sha256": "afdde8ecdf7378057fcdbd61bf5b4b0e2f87e5d054d82b374a25619b8ae9baa7"
+    },
+    {
+      "path": "upstream_snapshot/ultralytics/nn/modules/head.py",
+      "source": "C:\\Users\\TONY\\ultralytics\\ultralytics\\nn\\modules\\head.py",
+      "bytes": 115143,
+      "sha256": "0860eec94c1d076737a48f88ccf12ea426e2394095049f91db1bf43a4da3c18f"
+    },
+    {
+      "path": "upstream_snapshot/ultralytics/nn/modules/transformer.py",
+      "source": "C:\\Users\\TONY\\ultralytics\\ultralytics\\nn\\modules\\transformer.py",
+      "bytes": 41794,
+      "sha256": "bca771a9f27f4f5296aee37a992868d8b5779ac010d653de225632695b31b19d"
+    },
+    {
+      "path": "upstream_snapshot/ultralytics/nn/tasks.py",
+      "source": "C:\\Users\\TONY\\ultralytics\\ultralytics\\nn\\tasks.py",
+      "bytes": 92374,
+      "sha256": "b70ffe40f4ae1307b4fef4e4e13595c2bf37630e2b73f740b8a611cf2599afed"
+    },
+    {
+      "path": "upstream_snapshot/ultralytics/models/utils/loss.py",
+      "source": "C:\\Users\\TONY\\ultralytics\\ultralytics\\models\\utils\\loss.py",
+      "bytes": 22037,
+      "sha256": "09d4ab80c4163a228a5f1044d605ad53c6e3ecaf244bd71094e35a73a226c3fc"
+    },
+    {
+      "path": "THIRD_PARTY/ULTRALYTICS_LICENSE.txt",
+      "source": "C:\\Users\\TONY\\ultralytics\\LICENSE",
+      "bytes": 35184,
+      "sha256": "e0eedba615d5cd1b986afb6c5b3a4b1ae33713e7e9dc74d19daec5e3221f9d2e"
+    },
+    {
+      "path": "THIRD_PARTY/ultralytics_pyproject.toml",
+      "source": "C:\\Users\\TONY\\ultralytics\\pyproject.toml",
+      "bytes": 11289,
+      "sha256": "91ab39e0cfbc27725fd8bd45fc4604e064ce775dc40368c553eefa02063ecf8e"
+    }
+  ]
+}

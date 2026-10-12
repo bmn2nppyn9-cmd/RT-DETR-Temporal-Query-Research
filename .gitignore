@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+vendor/
+数据集/
+data/
+datasets/
+runs/
+records*/
+stream_preds*/
+*.pt
+*.pth
+*.npz
+*.log
+.env
+.env.*

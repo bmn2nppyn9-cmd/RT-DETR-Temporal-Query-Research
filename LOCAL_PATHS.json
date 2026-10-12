@@ -1,0 +1,586 @@
+[
+  {
+    "file": "bench_keyframe.py",
+    "line": 170
+  },
+  {
+    "file": "bench_stages.py",
+    "line": 63
+  },
+  {
+    "file": "bench_stages.py",
+    "line": 65
+  },
+  {
+    "file": "build_stream_index.py",
+    "line": 246
+  },
+  {
+    "file": "build_stream_index.py",
+    "line": 248
+  },
+  {
+    "file": "build_stream_index.py",
+    "line": 254
+  },
+  {
+    "file": "build_yolo_dataset.py",
+    "line": 153
+  },
+  {
+    "file": "eval_full_metrics.py",
+    "line": 47
+  },
+  {
+    "file": "eval_sap.py",
+    "line": 48
+  },
+  {
+    "file": "exp_ab_adaptive_depth.py",
+    "line": 29
+  },
+  {
+    "file": "exp_ab_adaptive_depth.py",
+    "line": 30
+  },
+  {
+    "file": "gt_area_stats.py",
+    "line": 31
+  },
+  {
+    "file": "make_smoke_subset.py",
+    "line": 31
+  },
+  {
+    "file": "make_train_subset.py",
+    "line": 48
+  },
+  {
+    "file": "offline_query_propagation.py",
+    "line": 31
+  },
+  {
+    "file": "oracle_analysis.py",
+    "line": 52
+  },
+  {
+    "file": "plot_profile.py",
+    "line": 155
+  },
+  {
+    "file": "prepare_argoverse.py",
+    "line": 115
+  },
+  {
+    "file": "prepare_argoverse.py",
+    "line": 116
+  },
+  {
+    "file": "probe_dedup_compare.py",
+    "line": 16
+  },
+  {
+    "file": "probe_encoder_recall.py",
+    "line": 49
+  },
+  {
+    "file": "probe_propagation.py",
+    "line": 46
+  },
+  {
+    "file": "record_stream_predictions.py",
+    "line": 49
+  },
+  {
+    "file": "test_propagation_coverage.py",
+    "line": 37
+  },
+  {
+    "file": "test_propagation_coverage.py",
+    "line": 38
+  },
+  {
+    "file": "verify_ap_vs_pycoco.py",
+    "line": 40
+  },
+  {
+    "file": "ablation_2d/eval_grid_2d.py",
+    "line": 36
+  },
+  {
+    "file": "ablation_2d/plot_grid.py",
+    "line": 190
+  },
+  {
+    "file": "ablation_3d/eval_grid_3d.py",
+    "line": 41
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e1_sha256.json",
+    "line": 3
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e1_sha256.json",
+    "line": 8
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e1_sha256.json",
+    "line": 13
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e1_sha256.json",
+    "line": 18
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e1_sha256.json",
+    "line": 23
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e3_sha256.json",
+    "line": 3
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e3_sha256.json",
+    "line": 8
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e3_sha256.json",
+    "line": 13
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e3_sha256.json",
+    "line": 18
+  },
+  {
+    "file": "b1a_pair/b1a_checkpoints_e3_sha256.json",
+    "line": 23
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 13
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 14
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 33
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 34
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 57
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 58
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 81
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 82
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 105
+  },
+  {
+    "file": "b1a_pair/b1a_main_e3_results.json",
+    "line": 106
+  },
+  {
+    "file": "b1a_pair/b1a_pair.yaml",
+    "line": 1
+  },
+  {
+    "file": "b1a_pair/b1a_pair.yaml",
+    "line": 3
+  },
+  {
+    "file": "b1a_pair/b1a_pair.yaml",
+    "line": 4
+  },
+  {
+    "file": "b1a_pair/b1a_single.yaml",
+    "line": 1
+  },
+  {
+    "file": "b1a_pair/b1a_single.yaml",
+    "line": 3
+  },
+  {
+    "file": "b1a_pair/b1a_single.yaml",
+    "line": 4
+  },
+  {
+    "file": "b1a_pair/b1a_smoke_e1_results.json",
+    "line": 14
+  },
+  {
+    "file": "b1a_pair/b1a_smoke_e1_results.json",
+    "line": 15
+  },
+  {
+    "file": "b1a_pair/b1a_smoke_e1_results.json",
+    "line": 38
+  },
+  {
+    "file": "b1a_pair/b1a_smoke_e1_results.json",
+    "line": 39
+  },
+  {
+    "file": "b1a_pair/b1a_smoke_e1_results.json",
+    "line": 62
+  },
+  {
+    "file": "b1a_pair/b1a_smoke_e1_results.json",
+    "line": 63
+  },
+  {
+    "file": "b1a_pair/b1a_smoke_e1_results.json",
+    "line": 86
+  },
+  {
+    "file": "b1a_pair/b1a_smoke_e1_results.json",
+    "line": 87
+  },
+  {
+    "file": "b1a_pair/dataset_b1a.py",
+    "line": 22
+  },
+  {
+    "file": "b1a_pair/diag_b1a0.py",
+    "line": 18
+  },
+  {
+    "file": "b1a_pair/diag_b1a0.py",
+    "line": 19
+  },
+  {
+    "file": "b1a_pair/diag_b1a0.py",
+    "line": 29
+  },
+  {
+    "file": "b1a_pair/diag_b1a0.py",
+    "line": 30
+  },
+  {
+    "file": "b1a_pair/diag_b1a0.py",
+    "line": 32
+  },
+  {
+    "file": "b1a_pair/eval_b1a.py",
+    "line": 26
+  },
+  {
+    "file": "b1a_pair/make_pair_subset.py",
+    "line": 30
+  },
+  {
+    "file": "b1a_pair/record_b1a.py",
+    "line": 29
+  },
+  {
+    "file": "b1a_pair/record_b1a.py",
+    "line": 32
+  },
+  {
+    "file": "b1a_pair/test_b1a_regression.py",
+    "line": 7
+  },
+  {
+    "file": "b1a_pair/test_b1a_regression.py",
+    "line": 18
+  },
+  {
+    "file": "b1a_pair/test_b1a_regression.py",
+    "line": 28
+  },
+  {
+    "file": "b1a_pair/test_b1a_regression.py",
+    "line": 29
+  },
+  {
+    "file": "b1a_pair/train_b1a.py",
+    "line": 25
+  },
+  {
+    "file": "b1a_pair/train_b1a.py",
+    "line": 29
+  },
+  {
+    "file": "b1a_pair/train_b1a.py",
+    "line": 30
+  },
+  {
+    "file": "b1a_pair/train_b1a.py",
+    "line": 66
+  },
+  {
+    "file": "b1a_pair/train_b1a.py",
+    "line": 88
+  },
+  {
+    "file": "cfg/argoverse-hd-local.yaml",
+    "line": 10
+  },
+  {
+    "file": "query_depth_probe/analyze_qd_o.py",
+    "line": 37
+  },
+  {
+    "file": "query_depth_probe/analyze_qd_o.py",
+    "line": 38
+  },
+  {
+    "file": "query_depth_probe/analyze_qd_o.py",
+    "line": 42
+  },
+  {
+    "file": "query_depth_probe/analyze_qd_o.py",
+    "line": 43
+  },
+  {
+    "file": "query_depth_probe/bench_qd_t.py",
+    "line": 30
+  },
+  {
+    "file": "query_depth_probe/bench_qd_t.py",
+    "line": 35
+  },
+  {
+    "file": "query_depth_probe/bench_qd_t.py",
+    "line": 36
+  },
+  {
+    "file": "query_depth_probe/bench_qd_t.py",
+    "line": 37
+  },
+  {
+    "file": "query_depth_probe/eval_qd_p.py",
+    "line": 30
+  },
+  {
+    "file": "query_depth_probe/eval_qd_p.py",
+    "line": 31
+  },
+  {
+    "file": "query_depth_probe/eval_qd_p.py",
+    "line": 35
+  },
+  {
+    "file": "query_depth_probe/eval_qd_p.py",
+    "line": 36
+  },
+  {
+    "file": "query_depth_probe/eval_qd_t.py",
+    "line": 34
+  },
+  {
+    "file": "query_depth_probe/eval_qd_t.py",
+    "line": 35
+  },
+  {
+    "file": "query_depth_probe/eval_qd_t.py",
+    "line": 39
+  },
+  {
+    "file": "query_depth_probe/eval_qd_t.py",
+    "line": 40
+  },
+  {
+    "file": "query_depth_probe/make_qd_o_report.py",
+    "line": 19
+  },
+  {
+    "file": "query_depth_probe/make_qd_p_report.py",
+    "line": 20
+  },
+  {
+    "file": "query_depth_probe/make_qd_t_report.py",
+    "line": 19
+  },
+  {
+    "file": "query_depth_probe/record_qd_o.py",
+    "line": 39
+  },
+  {
+    "file": "query_depth_probe/record_qd_o.py",
+    "line": 44
+  },
+  {
+    "file": "query_depth_probe/record_qd_o.py",
+    "line": 45
+  },
+  {
+    "file": "query_depth_probe/record_qd_o.py",
+    "line": 46
+  },
+  {
+    "file": "query_depth_probe/record_qd_p.py",
+    "line": 40
+  },
+  {
+    "file": "query_depth_probe/record_qd_p.py",
+    "line": 41
+  },
+  {
+    "file": "query_depth_probe/record_qd_p.py",
+    "line": 42
+  },
+  {
+    "file": "query_depth_probe/record_qd_p.py",
+    "line": 49
+  },
+  {
+    "file": "query_depth_probe/record_qd_p.py",
+    "line": 50
+  },
+  {
+    "file": "query_depth_probe/record_qd_p.py",
+    "line": 51
+  },
+  {
+    "file": "query_depth_probe/record_qd_t.py",
+    "line": 44
+  },
+  {
+    "file": "query_depth_probe/record_qd_t.py",
+    "line": 49
+  },
+  {
+    "file": "query_depth_probe/record_qd_t.py",
+    "line": 50
+  },
+  {
+    "file": "query_depth_probe/record_qd_t.py",
+    "line": 51
+  },
+  {
+    "file": "query_depth_probe/test_qd_regression.py",
+    "line": 34
+  },
+  {
+    "file": "query_depth_probe/test_qd_regression.py",
+    "line": 39
+  },
+  {
+    "file": "query_depth_probe/test_qd_regression.py",
+    "line": 40
+  },
+  {
+    "file": "query_depth_probe/test_qd_regression.py",
+    "line": 41
+  },
+  {
+    "file": "query_depth_probe/test_qd_regression.py",
+    "line": 42
+  },
+  {
+    "file": "query_depth_probe/test_qd_regression.py",
+    "line": 43
+  },
+  {
+    "file": "query_depth_probe/test_qd_regression.py",
+    "line": 44
+  },
+  {
+    "file": "query_prop_b0/bench_b0.py",
+    "line": 26
+  },
+  {
+    "file": "query_prop_b0/bench_b0.py",
+    "line": 55
+  },
+  {
+    "file": "query_prop_b0/bench_b0.py",
+    "line": 61
+  },
+  {
+    "file": "query_prop_b0/bench_b0_interleaved.py",
+    "line": 20
+  },
+  {
+    "file": "query_prop_b0/bench_b0_interleaved.py",
+    "line": 55
+  },
+  {
+    "file": "query_prop_b0/bench_b0_interleaved.py",
+    "line": 101
+  },
+  {
+    "file": "query_prop_b0/diag_b0_posthoc.py",
+    "line": 24
+  },
+  {
+    "file": "query_prop_b0/diag_b0_posthoc.py",
+    "line": 33
+  },
+  {
+    "file": "query_prop_b0/diag_b0_posthoc.py",
+    "line": 153
+  },
+  {
+    "file": "query_prop_b0/diag_b0_posthoc.py",
+    "line": 216
+  },
+  {
+    "file": "query_prop_b0/dump_a0_raw.py",
+    "line": 21
+  },
+  {
+    "file": "query_prop_b0/dump_a0_raw.py",
+    "line": 22
+  },
+  {
+    "file": "query_prop_b0/eval_b0.py",
+    "line": 33
+  },
+  {
+    "file": "query_prop_b0/eval_b0.py",
+    "line": 42
+  },
+  {
+    "file": "query_prop_b0/eval_b0.py",
+    "line": 218
+  },
+  {
+    "file": "query_prop_b0/eval_b0.py",
+    "line": 282
+  },
+  {
+    "file": "query_prop_b0/record_b0.py",
+    "line": 39
+  },
+  {
+    "file": "query_prop_b0/record_b0.py",
+    "line": 69
+  },
+  {
+    "file": "query_prop_b0/record_b0.py",
+    "line": 77
+  },
+  {
+    "file": "query_prop_b0/test_b0_regression.py",
+    "line": 30
+  },
+  {
+    "file": "query_prop_b0/test_b0_regression.py",
+    "line": 31
+  },
+  {
+    "file": "query_prop_b0/test_b0_regression.py",
+    "line": 32
+  },
+  {
+    "file": "query_prop_b0/test_b0_regression.py",
+    "line": 33
+  }
+]

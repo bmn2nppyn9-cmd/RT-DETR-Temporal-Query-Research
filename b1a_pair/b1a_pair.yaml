@@ -1,0 +1,13 @@
+train: D:/lunwen/自研/b1a_pair/all_frames_train.txt
+# 自动生成 by train_b1a.py
+path: D:\lunwen\自研\数据集\argoverse-hd-yolo
+val: D:/lunwen/自研/b1a_pair/val_sub20.txt
+names:
+  0: person
+  1: bicycle
+  2: car
+  3: motorcycle
+  4: bus
+  5: truck
+  6: traffic_light
+  7: stop_sign

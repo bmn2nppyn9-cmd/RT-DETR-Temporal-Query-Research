@@ -1,0 +1,27 @@
+{
+  "b1a0": {
+    "path": "D:\\lunwen\\\u81ea\u7814\\b1a_pair\\runs\\b1a0\\weights\\best.pt",
+    "sha256": "5df4ed2745624cd9367565ee00ed0c20f0f75c2af064f215745d801a58bd1c2b",
+    "bytes": 60158697
+  },
+  "b1ac25": {
+    "path": "D:\\lunwen\\\u81ea\u7814\\b1a_pair\\runs\\b1ac25\\weights\\best.pt",
+    "sha256": "827f364740094b2f323149b8a317c9c08cdad9dcdac95192ebc1caf59450da2e",
+    "bytes": 60158761
+  },
+  "b1at31": {
+    "path": "D:\\lunwen\\\u81ea\u7814\\b1a_pair\\runs\\b1at31\\weights\\best.pt",
+    "sha256": "afd930579bf7fcb22d767e0dd5cb55f6c5ad61e543dd2b826b38876cd92e1965",
+    "bytes": 60292003
+  },
+  "b1at23": {
+    "path": "D:\\lunwen\\\u81ea\u7814\\b1a_pair\\runs\\b1at23\\weights\\best.pt",
+    "sha256": "54ac76f5e909aa8c6eab1c6ed0fdf6dcb377f2b8e27b3dd9bec923c23ebd7a3b",
+    "bytes": 60292003
+  },
+  "b1at33": {
+    "path": "D:\\lunwen\\\u81ea\u7814\\b1a_pair\\runs\\b1at33\\weights\\best.pt",
+    "sha256": "d13de937475c57d8dc92317929fde99884ba4e84cafd42cb26223b6febe7e012",
+    "bytes": 60292003
+  }
+}
