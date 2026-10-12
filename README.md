@@ -109,10 +109,4 @@ query_prop_b0/       # 冻结传播失败诊断和评测依赖
 
 根目录旧 profiling/绘图/探索脚本和 `query_*` 中未接入受管流程的脚本属于历史研究归档，可能仍含原机器路径。受支持的可移植入口是 `tqinfra` 五项受管任务，历史输出保留原协议和来源，不混充本次新测量。
 
-## License and attribution
-
-AGPL-3.0，见 [LICENSE](LICENSE)。基于 Ultralytics RT-DETR 实现，原始许可证见 [THIRD_PARTY](THIRD_PARTY/ULTRALYTICS_LICENSE.txt)。研究补丁基准与来源见 `patches/upstream.json`；整理时复制文件的原始清单见 `SOURCE_MANIFEST.json`（是初始快照，并非当前代码校验清单）。
-
-## 历史对照审核
-
-本次核查原 `records_e3/preds_b1ac25.npz` 发现：该配置训练时使用 325 current queries，但历史录制代码将 encoder query 数覆盖为 300，因此历史表中的 b1ac25 不是完整的同预算 325-query 推理对照。历史数字保留并注明，不据此宣称已经排除增加 query 的贡献。当前受管录制已修复为使用 checkpoint 的 num_queries，后续正式对照应重录并重新评测。三层基线与 S3→L3 的历史差值仍是对应两配置的已有结果。
+欢迎fork！
